@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Radek Komendera - Ćwiczenia</title>
+    <link rel="stylesheet" href="css/style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo brand-font">RADEK <span>KOMENDERA</span></div>
+        <div class="nav-tabs">
+            <a href="index.html" class="nav-link">
+                <span class="material-symbols-rounded">dashboard</span> Panel
+            </a>
+            <a href="exercises.html" class="nav-link active">
+                <span class="material-symbols-rounded">fitness_center</span> Baza Ćwiczeń
+            </a>
+        </div>
+    </nav>
+
+    <div class="container fade-in">
+        
+        <div class="grid-2">
+            <!-- Formularz -->
+            <div class="glass-panel" style="height: fit-content;">
+                <h2 class="brand-font" id="formTitle" style="margin-bottom: 20px;">Dodaj Ćwiczenie</h2>
+                
+                <div class="input-group">
+                    <label>Nazwa Ćwiczenia</label>
+                    <input type="text" id="exName" placeholder="np. Bench Press">
+                </div>
+                
+                <div class="input-group">
+                    <label>URL Obrazka / GIF</label>
+                    <input type="text" id="exMedia" placeholder="https://...">
+                    <small style="color: #666; font-size: 0.7rem; margin-top: 5px; display:block;">Link bezpośredni do jpg/png/gif</small>
+                </div>
+
+                <div class="input-group">
+                    <label>Opis Techniki</label>
+                    <textarea id="exDesc" rows="4" placeholder="Krótki opis techniki..."></textarea>
+                </div>
+
+                <div class="flex-row">
+                    <button class="btn" id="saveExBtn" onclick="saveExercise()" style="flex: 2;">
+                        <span class="material-symbols-rounded">add</span> Dodaj
+                    </button>
+                    <button class="btn btn-secondary" onclick="resetForm()" style="flex: 1;">Wyczyść</button>
+                </div>
+            </div>
+
+            <!-- Lista -->
+            <div>
+                <h3 class="brand-font" style="margin-bottom: 20px;">Twoja Biblioteka</h3>
+                <div id="exerciseList">
+                    <!-- JS generuje liste -->
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Tooltip kontener (ważne!) -->
+    <div id="appTooltip" class="exercise-tooltip">
+        <div class="tt-title" id="ttTitle"></div>
+        <div class="tt-desc" id="ttDesc"></div>
+        <div id="ttMediaContainer"></div>
+    </div>
+
+    <script src="js/storage.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/exercises.js"></script>
+</body>
+</html>

@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Radek Komendera - Panel</title>
+    <link rel="stylesheet" href="css/style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+    
+    <nav class="navbar">
+        <div class="logo brand-font">RADEK <span>KOMENDERA</span></div>
+        <div class="nav-tabs">
+            <a href="index.html" class="nav-link active">
+                <span class="material-symbols-rounded">dashboard</span> Panel
+            </a>
+            <a href="exercises.html" class="nav-link">
+                <span class="material-symbols-rounded">fitness_center</span> Baza Ćwiczeń
+            </a>
+        </div>
+    </nav>
+
+    <div class="container fade-in">
+        <div class="header-wrapper">
+            <div>
+                <h1 class="brand-font">Twoi Podopieczni</h1>
+                <p class="text-sec">Zarządzaj planami treningowymi</p>
+            </div>
+            <div class="flex-row">
+                <!-- DELETE MODE TOGGLE -->
+                <button class="btn btn-secondary btn-icon-only" id="toggleDeleteModeBtn" onclick="toggleDeleteMode()" title="Usuń plany">
+                    <span class="material-symbols-rounded">delete_sweep</span>
+                </button>
+                
+                <div class="flex-row" style="border-left: 1px solid rgba(255,255,255,0.1); padding-left: 15px; margin-left: 5px;">
+                     <button class="btn btn-secondary" onclick="exportToJson()">
+                        <span class="material-symbols-rounded">download</span> Backup
+                    </button>
+                     <input type="file" id="importInput" hidden onchange="importFromJson(this.files[0], () => location.reload())">
+                    <button class="btn btn-secondary" onclick="document.getElementById('importInput').click()">
+                        <span class="material-symbols-rounded">upload</span> Wczytaj
+                    </button>
+                    <button class="btn" onclick="createNewPlan()">
+                        <span class="material-symbols-rounded">add</span> Nowy Plan
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Delete Action Bar (Hidden by default) -->
+        <div id="deleteActionBar" style="display:none; margin-bottom: 20px; background: rgba(255, 68, 68, 0.1); border: 1px solid var(--danger-color); padding: 15px; border-radius: 12px; align-items: center; justify-content: space-between;">
+            <span style="font-weight: 600; color: var(--danger-color);">Tryb usuwania aktywny. Zaznacz plany.</span>
+            <button class="btn btn-danger" onclick="deleteSelectedPlans()">Usuń Zaznaczone</button>
+        </div>
+
+        <div id="plansGrid" class="grid-2">
+            <!-- Plans generated here -->
+        </div>
+    </div>
+
+    <script src="js/storage.js"></script>
+    <script src="js/ui.js"></script>
+    <script>
+        let isDeleteMode = false;
+        let selectedPlans = new Set();
+
+        function renderDashboard() {
+            const db = getDb();
+            const grid = document.getElementById('plansGrid');
+            grid.innerHTML = '';
+
+            if(db.plans.length === 0) {
+                grid.innerHTML = '<div class="glass-panel" style="grid-column: 1/-1; text-align:center;"><p class="text-sec">Brak planów. Dodaj pierwszy!</p></div>';
+                return;
+            }
+
+            db.plans.forEach(plan => {
+                const card = document.createElement('div');
+                card.className = `glass-panel plan-card ${isDeleteMode ? 'delete-mode' : ''}`;
+                if(selectedPlans.has(plan.id)) card.classList.add('selected');
+
+                // Dynamic Glow Color based on plan color
+                const glowColor = plan.color || '#CCFF00';
+                
+                // Add specific hover glow logic via style injection or inline
+                card.onmouseenter = () => {
+                    if(!isDeleteMode) card.style.boxShadow = `0 20px 50px -10px ${glowColor}40`; // 40 = opacity hex
+                };
+                card.onmouseleave = () => {
+                    if(!isDeleteMode) card.style.boxShadow = '';
+                };
+
+                card.style.borderLeft = `5px solid ${glowColor}`;
+
+                card.onclick = () => handleCardClick(plan.id);
+                
+                card.innerHTML = `
+                    <div class="delete-checkbox"></div>
+                    <div class="flex-row space-between">
+                        <h3 class="brand-font" style="font-size: 1.4rem;">${plan.name}</h3>
+                        <span class="material-symbols-rounded" style="color:${glowColor}">fitness_center</span>
+                    </div>
+                    <p class="text-sec" style="font-size: 0.9rem; margin-top:10px;">
+                        ${plan.days.length} Dni treningowe &bull; ${plan.duration} Tygodnie
+                    </p>
+                    <div style="margin-top:20px; display:flex; justify-content:flex-end; align-items:center; gap:5px; color:var(--text-secondary); font-size:0.8rem; opacity: ${isDeleteMode ? 0 : 1}">
+                        Edytuj <span class="material-symbols-rounded" style="font-size:16px">arrow_forward</span>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function createNewPlan() {
+            const db = getDb();
+            const newPlan = {
+                id: Date.now().toString(),
+                name: 'Nowy Podopieczny',
+                color: '#CCFF00',
+                days: [],
+                duration: 4
+            };
+            db.plans.push(newPlan);
+            saveDb(db);
+            renderDashboard();
+        }
+
+        // --- DELETE MODE LOGIC ---
+        function toggleDeleteMode() {
+            isDeleteMode = !isDeleteMode;
+            selectedPlans.clear();
+            
+            const btn = document.getElementById('toggleDeleteModeBtn');
+            const bar = document.getElementById('deleteActionBar');
+            
+            if(isDeleteMode) {
+                btn.classList.add('btn-danger'); // Change icon color
+                bar.style.display = 'flex';
+                bar.classList.add('fade-in');
+            } else {
+                btn.classList.remove('btn-danger');
+                bar.style.display = 'none';
+            }
+            renderDashboard();
+        }
+
+        function handleCardClick(id) {
+            if (isDeleteMode) {
+                if (selectedPlans.has(id)) selectedPlans.delete(id);
+                else selectedPlans.add(id);
+                renderDashboard(); // Re-render to show selection state
+            } else {
+                window.location.href = `plan.html?id=${id}`;
+            }
+        }
+
+        function deleteSelectedPlans() {
+            if(selectedPlans.size === 0) return alert("Nie zaznaczono żadnych planów.");
+            
+            if(confirm(`Czy na pewno usunąć ${selectedPlans.size} planów?`)) {
+                const db = getDb();
+                db.plans = db.plans.filter(p => !selectedPlans.has(p.id));
+                saveDb(db);
+                toggleDeleteMode(); // Exit mode
+                renderDashboard();
+            }
+        }
+
+        renderDashboard();
+    </script>
+</body>
+</html>

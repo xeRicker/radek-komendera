@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Twój Plan | Radek Komendera</title>
+    <link rel="stylesheet" href="css/style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+    <div style="text-align: center; padding: 40px 0 20px 0;">
+        <div class="logo brand-font" style="justify-content: center; font-size: 2rem;">
+            RADEK <span>KOMENDERA</span>
+        </div>
+    </div>
+
+    <div class="container fade-in">
+        <div class="glass-panel" style="text-align: center; border-top: 4px solid var(--primary-color);">
+            <h1 class="brand-font" style="font-size: 2rem; color: #fff;" id="stPlanName">...</h1>
+            <p id="stPlanNote" style="margin-top: 15px; color: var(--text-secondary); font-style: italic;"></p>
+        </div>
+
+        <div id="stDaysContainer"></div>
+
+        <div style="text-align: center; margin-top: 50px; color: #444; font-size: 0.8rem; padding-bottom: 30px;">
+            Powered by TrenerApp &bull; Radek Komendera
+        </div>
+    </div>
+    
+    <!-- Tooltip -->
+    <div id="appTooltip" class="exercise-tooltip">
+        <div id="ttMediaContainer" class="tt-media-container"></div>
+        <div class="tt-content">
+            <div class="tt-title" id="ttTitle"></div>
+            <div class="tt-desc" id="ttDesc"></div>
+        </div>
+    </div>
+
+    <script src="js/storage.js"></script>
+    <script src="js/ui.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            const id = params.get('id');
+            const plan = getPlan(id);
+
+            if (!plan) {
+                document.body.innerHTML = '<h2 style="color:white; text-align:center; margin-top:50px;">Nie znaleziono planu.</h2>';
+                return;
+            }
+
+            document.getElementById('stPlanName').innerText = plan.name;
+            document.getElementById('stPlanNote').innerText = plan.mainNote || 'Powodzenia w treningu!';
+
+            const container = document.getElementById('stDaysContainer');
+            const weeks = parseInt(plan.duration) || 4;
+            const hasDeload = plan.hasDeload;
+            const db = getDb();
+
+            plan.days.forEach(day => {
+                const dayDiv = document.createElement('div');
+                dayDiv.className = 'glass-panel';
+                dayDiv.innerHTML = `<h2 class="brand-font" style="margin-bottom: 30px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px; color: var(--primary-color);">${day.name}</h2>`;
+
+                day.exercises.forEach((ex, idx) => {
+                    const dbEx = db.exercises.find(x => x.name === ex.name);
+                    const nameClass = dbEx ? 'interactive-name' : '';
+                    const tooltipAttr = dbEx ? `onmouseenter="showTooltip(event, '${ex.name}')" onmouseleave="hideTooltip()"` : '';
+
+                    let headerCols = '';
+                    for(let i=1; i<=weeks; i++) headerCols += `<th>T ${i}</th>`;
+                    if(hasDeload) headerCols += `<th style="color:var(--primary-color)">DELOAD</th>`;
+
+                    let inputCols = '';
+                    for(let i=1; i<=weeks; i++) inputCols += `<td><input class="result-input" placeholder="-"></td>`;
+                    if(hasDeload) inputCols += `<td style="background:rgba(204,255,0,0.05)"><input class="result-input" placeholder="Lżej"></td>`;
+
+                    const exDiv = document.createElement('div');
+                    exDiv.style.marginBottom = "50px";
+                    exDiv.innerHTML = `
+                        <div style="margin-bottom: 20px;">
+                            <div style="font-weight: 700; font-size: 1.3rem; margin-bottom: 15px;">
+                                <span style="color: var(--primary-color); font-style:italic; margin-right:5px;">${idx+1}.</span> 
+                                <span class="${nameClass}" ${tooltipAttr}>${ex.name}</span>
+                            </div>
+                            
+                            <!-- New Grid Pills Layout -->
+                            <div class="student-meta-grid">
+                                <div class="meta-pill">
+                                    <span class="meta-label">Serie</span>
+                                    <span class="meta-value">${ex.sets}</span>
+                                </div>
+                                <div class="meta-pill">
+                                    <span class="meta-label">Powtórzenia</span>
+                                    <span class="meta-value">${ex.reps}</span>
+                                </div>
+                                <div class="meta-pill">
+                                    <span class="meta-label">Tempo</span>
+                                    <span class="meta-value">${ex.tempo}</span>
+                                </div>
+                                <div class="meta-pill">
+                                    <span class="meta-label">Przerwa</span>
+                                    <span class="meta-value">${ex.rest}</span>
+                                </div>
+                                ${ex.weight ? `
+                                <div class="meta-pill" style="border-color:rgba(204,255,0,0.3)">
+                                    <span class="meta-label" style="color:var(--primary-color)">RIR / RPE</span>
+                                    <span class="meta-value" style="color:var(--primary-color)">${ex.weight}</span>
+                                </div>` : ''}
+                            </div>
+
+                            ${ex.note ? `<div style="font-size:0.9rem; color:#ccc; margin-bottom:15px; font-style:italic;">Note: <span style="color:#fff">${ex.note}</span></div>` : ''}
+                        </div>
+
+                        <div class="student-table-wrapper">
+                            <table class="student-table">
+                                <thead><tr>${headerCols}</tr></thead>
+                                <tbody><tr>${inputCols}</tr></tbody>
+                            </table>
+                        </div>
+                    `;
+                    dayDiv.appendChild(exDiv);
+                });
+
+                container.appendChild(dayDiv);
+            });
+        });
+    </script>
+</body>
+</html>
