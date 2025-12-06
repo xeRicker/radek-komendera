@@ -3,9 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <title>Radek Komendera - Panel</title>
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/components.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
+<!-- Reszta ciała pliku index.html bez zmian w kodzie JS, tylko head się zmienia -->
 <body>
     
     <nav class="navbar">
@@ -27,11 +29,9 @@
                 <p class="text-sec">Zarządzaj planami treningowymi</p>
             </div>
             <div class="flex-row">
-                <!-- DELETE MODE TOGGLE -->
                 <button class="btn btn-secondary btn-icon-only" id="toggleDeleteModeBtn" onclick="toggleDeleteMode()" title="Usuń plany">
                     <span class="material-symbols-rounded">delete_sweep</span>
                 </button>
-                
                 <div class="flex-row" style="border-left: 1px solid rgba(255,255,255,0.1); padding-left: 15px; margin-left: 5px;">
                      <button class="btn btn-secondary" onclick="exportToJson()">
                         <span class="material-symbols-rounded">download</span> Backup
@@ -47,15 +47,12 @@
             </div>
         </div>
 
-        <!-- Delete Action Bar (Hidden by default) -->
         <div id="deleteActionBar" style="display:none; margin-bottom: 20px; background: rgba(255, 68, 68, 0.1); border: 1px solid var(--danger-color); padding: 15px; border-radius: 12px; align-items: center; justify-content: space-between;">
             <span style="font-weight: 600; color: var(--danger-color);">Tryb usuwania aktywny. Zaznacz plany.</span>
             <button class="btn btn-danger" onclick="deleteSelectedPlans()">Usuń Zaznaczone</button>
         </div>
 
-        <div id="plansGrid" class="grid-2">
-            <!-- Plans generated here -->
-        </div>
+        <div id="plansGrid" class="grid-2"></div>
     </div>
 
     <script src="js/storage.js"></script>
@@ -70,7 +67,15 @@
             grid.innerHTML = '';
 
             if(db.plans.length === 0) {
-                grid.innerHTML = '<div class="glass-panel" style="grid-column: 1/-1; text-align:center;"><p class="text-sec">Brak planów. Dodaj pierwszy!</p></div>';
+                grid.innerHTML = `
+                    <div class="glass-panel empty-state" style="grid-column: 1/-1;">
+                        <span class="material-symbols-rounded empty-state-icon">folder_off</span>
+                        <h2 class="brand-font">BRAK PLANÓW</h2>
+                        <p class="text-sec">Twoja lista podopiecznych jest pusta.</p>
+                        <button class="btn" onclick="createNewPlan()" style="margin-top:20px;">
+                            <span class="material-symbols-rounded">add</span> Stwórz Pierwszy Plan
+                        </button>
+                    </div>`;
                 return;
             }
 
@@ -78,19 +83,12 @@
                 const card = document.createElement('div');
                 card.className = `glass-panel plan-card ${isDeleteMode ? 'delete-mode' : ''}`;
                 if(selectedPlans.has(plan.id)) card.classList.add('selected');
-
-                // Dynamic Glow Color based on plan color
-                const glowColor = plan.color || '#CCFF00';
                 
-                // Add specific hover glow logic via style injection or inline
-                card.onmouseenter = () => {
-                    if(!isDeleteMode) card.style.boxShadow = `0 20px 50px -10px ${glowColor}40`; // 40 = opacity hex
-                };
-                card.onmouseleave = () => {
-                    if(!isDeleteMode) card.style.boxShadow = '';
-                };
-
+                const glowColor = plan.color || '#CCFF00';
                 card.style.borderLeft = `5px solid ${glowColor}`;
+                
+                card.onmouseenter = () => { if(!isDeleteMode) card.style.boxShadow = `0 20px 50px -10px ${glowColor}40`; };
+                card.onmouseleave = () => { if(!isDeleteMode) card.style.boxShadow = ''; };
 
                 card.onclick = () => handleCardClick(plan.id);
                 
@@ -110,62 +108,10 @@
                 grid.appendChild(card);
             });
         }
-
-        function createNewPlan() {
-            const db = getDb();
-            const newPlan = {
-                id: Date.now().toString(),
-                name: 'Nowy Podopieczny',
-                color: '#CCFF00',
-                days: [],
-                duration: 4
-            };
-            db.plans.push(newPlan);
-            saveDb(db);
-            renderDashboard();
-        }
-
-        // --- DELETE MODE LOGIC ---
-        function toggleDeleteMode() {
-            isDeleteMode = !isDeleteMode;
-            selectedPlans.clear();
-            
-            const btn = document.getElementById('toggleDeleteModeBtn');
-            const bar = document.getElementById('deleteActionBar');
-            
-            if(isDeleteMode) {
-                btn.classList.add('btn-danger'); // Change icon color
-                bar.style.display = 'flex';
-                bar.classList.add('fade-in');
-            } else {
-                btn.classList.remove('btn-danger');
-                bar.style.display = 'none';
-            }
-            renderDashboard();
-        }
-
-        function handleCardClick(id) {
-            if (isDeleteMode) {
-                if (selectedPlans.has(id)) selectedPlans.delete(id);
-                else selectedPlans.add(id);
-                renderDashboard(); // Re-render to show selection state
-            } else {
-                window.location.href = `plan.html?id=${id}`;
-            }
-        }
-
-        function deleteSelectedPlans() {
-            if(selectedPlans.size === 0) return alert("Nie zaznaczono żadnych planów.");
-            
-            if(confirm(`Czy na pewno usunąć ${selectedPlans.size} planów?`)) {
-                const db = getDb();
-                db.plans = db.plans.filter(p => !selectedPlans.has(p.id));
-                saveDb(db);
-                toggleDeleteMode(); // Exit mode
-                renderDashboard();
-            }
-        }
-
+        function createNewPlan() { const db = getDb(); db.plans.push({ id: Date.now().toString(), name: 'Nowy Podopieczny', color: '#CCFF00', days: [], duration: 4 }); saveDb(db); renderDashboard(); }
+        function toggleDeleteMode() { isDeleteMode = !isDeleteMode; selectedPlans.clear(); const btn = document.getElementById('toggleDeleteModeBtn'); const bar = document.getElementById('deleteActionBar'); if(isDeleteMode) { btn.classList.add('btn-danger'); bar.style.display = 'flex'; bar.classList.add('fade-in'); } else { btn.classList.remove('btn-danger'); bar.style.display = 'none'; } renderDashboard(); }
+        function handleCardClick(id) { if (isDeleteMode) { if (selectedPlans.has(id)) selectedPlans.delete(id); else selectedPlans.add(id); renderDashboard(); } else { window.location.href = `plan.html?id=${id}`; } }
+        function deleteSelectedPlans() { if(selectedPlans.size === 0) return alert("Nie zaznaczono żadnych planów."); if(confirm(`Czy na pewno usunąć ${selectedPlans.size} planów?`)) { const db = getDb(); db.plans = db.plans.filter(p => !selectedPlans.has(p.id)); saveDb(db); toggleDeleteMode(); renderDashboard(); } }
         renderDashboard();
     </script>
 </body>

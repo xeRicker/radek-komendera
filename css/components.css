@@ -1,0 +1,123 @@
+/* --- GLASS PANELS --- */
+.glass-panel {
+    background: var(--surface-glass); backdrop-filter: blur(25px); border: var(--border-glass);
+    border-radius: var(--radius-lg); padding: 30px; margin-bottom: 25px;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.4); position: relative; transition: var(--transition);
+}
+.header-wrapper { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 30px; gap: 20px; flex-wrap: wrap; }
+
+/* --- BUTTONS & INPUTS --- */
+.btn { background: var(--primary-color); color: #000; border: none; padding: 0 24px; height: 50px; border-radius: 12px; font-family: 'Kanit', sans-serif; font-weight: 700; font-style: italic; text-transform: uppercase; cursor: pointer; transition: var(--transition); display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.9rem; }
+.btn:hover { transform: translateY(-2px); box-shadow: 0 0 25px var(--primary-glow); }
+.btn-secondary { background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(255,255,255,0.05); }
+.btn-secondary:hover { background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.2); }
+.btn-danger { background: rgba(255, 68, 68, 0.1); color: var(--danger-color); border: 1px solid rgba(255, 68, 68, 0.2); }
+.btn-danger:hover { background: rgba(255, 68, 68, 0.2); box-shadow: 0 0 20px rgba(255, 68, 68, 0.2); }
+.btn-icon-only { width: 44px; height: 44px; padding: 0; border-radius: 50%; display: flex; align-items: center; justify-content: center; min-width: 44px; }
+
+.input-group { margin-bottom: 25px; }
+.input-group label { display: block; margin-bottom: 10px; color: var(--text-secondary); font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+input, select, textarea { width: 100%; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); padding: 14px 16px; border-radius: 12px; color: white; font-family: 'Inter', sans-serif; font-size: 0.95rem; transition: var(--transition); }
+input:focus, textarea:focus { border-color: var(--primary-color); box-shadow: 0 0 0 2px rgba(204, 255, 0, 0.1); background: rgba(0,0,0,0.6); }
+
+/* --- SETTINGS ROW & SWITCH (Fixed Alignment) --- */
+.setting-row {
+    display: flex; 
+    align-items: center; 
+    gap: 15px;
+    background: rgba(255,255,255,0.03); 
+    padding: 0 15px; 
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.05); 
+    height: 56px; 
+}
+
+/* Klasa dla tekstu obok suwaka - mikro korekta w dół/górę */
+.toggle-label-text {
+    font-weight: 500; 
+    font-size: 0.9rem;
+    transform: translateY(2px); /* Przesunięcie o 2px w dół, żeby zrównać się z suwakiem */
+    display: inline-block;
+}
+
+.toggle-switch { position: relative; display: block; width: 46px; height: 26px; flex-shrink: 0; }
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255,255,255,0.1); transition: .4s; border-radius: 34px; border: 1px solid rgba(255,255,255,0.1); }
+.slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: #888; transition: .4s; border-radius: 50%; }
+input:checked + .slider { background-color: rgba(204, 255, 0, 0.15); border-color: var(--primary-color); }
+input:checked + .slider:before { transform: translateX(20px); background-color: var(--primary-color); }
+
+/* --- TOOLTIP (Fixed Full Image & Text) --- */
+.exercise-tooltip {
+    position: fixed; background: #000; border: 1px solid var(--primary-color);
+    border-radius: 16px; padding: 0; width: 340px; z-index: 9999; pointer-events: none; opacity: 0; transform: translateY(10px);
+    transition: opacity 0.2s ease, transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+    box-shadow: 0 20px 80px rgba(0,0,0,1); overflow: hidden;
+}
+.exercise-tooltip.visible { opacity: 1; transform: translateY(0); }
+.tt-content { padding: 15px; background: rgba(20,20,20,0.98); backdrop-filter: blur(10px); border-top: 1px solid rgba(255,255,255,0.1); }
+.tt-title { color: var(--primary-color); font-family: 'Kanit', sans-serif; font-size: 1.2rem; margin-bottom: 8px; font-weight: 800; font-style: italic; }
+
+/* FIX: Pełny tekst, brak ucinania */
+.tt-desc { 
+    font-size: 0.85rem; 
+    color: #ddd; 
+    line-height: 1.5; 
+    white-space: normal; 
+    /* Usunięto line-clamp */
+}
+
+.tt-media-container { width: 100%; background: #000; display: flex; justify-content: center; align-items: center; }
+
+/* FIX: Obsługa pionowych zdjęć 9:16 */
+.tt-media, .tt-media-video { 
+    width: 100%; 
+    height: auto; 
+    max-height: 600px; /* Pozwalamy zdjęciu być wysokim (dla pionowych fotek) */
+    object-fit: cover; /* Wypełnia całą szerokość, nie zostawia pasów */
+    display: block; 
+}
+
+/* --- STUDENT VIEW ELEMENTS --- */
+.interactive-name { border-bottom: 2px dotted var(--primary-color); cursor: help; transition: 0.2s; display: inline-block; }
+.interactive-name:hover { background: rgba(204, 255, 0, 0.1); color: var(--primary-color); }
+
+.student-meta-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; } /* Jeszcze mniejszy gap */
+.meta-pill { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08); padding: 5px 10px; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 60px; }
+.meta-label { font-size: 0.6rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 2px; font-weight: 600; }
+.meta-value { font-size: 0.9rem; color: #fff; font-weight: 700; font-family: 'Kanit', sans-serif; }
+
+/* Table */
+.student-table-wrapper { overflow-x: auto; padding-bottom: 5px; }
+.student-table { width: 100%; min-width: 600px; border-collapse: separate; border-spacing: 0 4px; } /* Bardzo mały spacing */
+.student-table th { text-align: center; color: var(--text-secondary); padding: 6px; font-size: 0.75rem; text-transform: uppercase; font-weight: 600; }
+.student-table td { background: rgba(255,255,255,0.03); padding: 0; }
+.student-table tr td:first-child { border-top-left-radius: 8px; border-bottom-left-radius: 8px; }
+.student-table tr td:last-child { border-top-right-radius: 8px; border-bottom-right-radius: 8px; }
+.result-input { background: transparent; border: none; text-align: center; padding: 10px; font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: background 0.2s; }
+
+/* Colors */
+.status-green { background: rgba(100, 255, 100, 0.25) !important; color: #fff !important; }
+.status-yellow { background: rgba(255, 255, 100, 0.25) !important; color: #fff !important; }
+.status-red { background: rgba(255, 100, 100, 0.25) !important; color: #fff !important; }
+
+/* --- OTHER UI --- */
+.list-img { width: 70px; height: 70px; min-width: 70px; border-radius: 12px; object-fit: cover; background: #222; border: 1px solid rgba(255,255,255,0.1); flex-shrink: 0; }
+
+.plan-card { cursor: pointer; user-select: none; overflow: hidden; transform-origin: center; }
+.plan-card:hover { transform: translateY(-5px) scale(1.01); border-color: rgba(255,255,255,0.2); }
+.plan-card.selected { border: 2px solid var(--danger-color) !important; background: rgba(255, 68, 68, 0.05); }
+.delete-checkbox { position: absolute; top: 15px; right: 15px; width: 24px; height: 24px; border-radius: 6px; border: 2px solid rgba(255,255,255,0.3); background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: 0.2s; }
+.plan-card.delete-mode .delete-checkbox { opacity: 1; }
+.plan-card.selected .delete-checkbox { background: var(--danger-color); border-color: var(--danger-color); }
+.plan-card.selected .delete-checkbox::after { content: '✕'; font-weight: bold; font-size: 14px; color: white; }
+
+.empty-state { text-align: center; padding: 60px 20px; background: radial-gradient(circle, rgba(255,255,255,0.03) 0%, transparent 70%); border-radius: var(--radius-lg); border: 1px dashed rgba(255,255,255,0.1); }
+.empty-state h2 { color: var(--text-secondary); margin-bottom: 10px; font-size: 1.5rem; }
+.empty-state-icon { font-size: 64px; color: #333; margin-bottom: 20px; }
+
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(5px); z-index: 999; justify-content: center; align-items: center; }
+.modal-overlay.active { display: flex; }
+.modal-content { background: #111; width: 90%; max-width: 500px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); max-height: 80vh; display: flex; flex-direction: column; }
+.exercise-row { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 25px; border-radius: 16px; margin-bottom: 20px; transition: var(--transition); }
+.exercise-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }

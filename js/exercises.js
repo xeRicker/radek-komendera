@@ -9,7 +9,7 @@ function renderExerciseList() {
     list.innerHTML = '';
     
     if (db.exercises.length === 0) {
-        list.innerHTML = '<div class="text-sec" style="text-align:center; padding:20px;">Brak ćwiczeń.</div>';
+        list.innerHTML = '<div class="text-sec" style="text-align:center; padding:20px;">Twoja baza jest pusta. Dodaj pierwsze ćwiczenie.</div>';
         return;
     }
 
@@ -19,17 +19,17 @@ function renderExerciseList() {
         item.style.padding = '15px';
         item.style.marginBottom = '10px';
         
-        // Używamy klasy modal-ex-img zdefiniowanej w CSS
+        // Zastosowanie klasy .list-img która ma sztywne wymiary (70x70)
         const imgHTML = ex.media ? 
-            `<img src="${ex.media}" class="modal-ex-img" onerror="this.src='https://via.placeholder.com/80?text=Error'">` : 
-            `<div class="modal-ex-img" style="display:flex;align-items:center;justify-content:center;color:#555"><span class="material-symbols-rounded">image</span></div>`;
+            `<img src="${ex.media}" class="list-img" onerror="this.src='https://via.placeholder.com/70?text=Error'">` : 
+            `<div class="list-img" style="display:flex;align-items:center;justify-content:center;color:#555"><span class="material-symbols-rounded">image</span></div>`;
 
         item.innerHTML = `
             <div class="flex-row">
                 ${imgHTML}
                 <div>
                     <h4 class="brand-font">${ex.name}</h4>
-                    <p style="font-size:0.8rem; color: #888;">${ex.desc ? ex.desc.substring(0, 50) + '...' : ''}</p>
+                    <p style="font-size:0.8rem; color: #888;">${ex.desc ? (ex.desc.length > 50 ? ex.desc.substring(0, 50) + '...' : ex.desc) : ''}</p>
                 </div>
             </div>
             <div class="flex-row">
@@ -44,7 +44,7 @@ function renderExerciseList() {
         list.appendChild(item);
     });
 }
-// ... Reszta funkcji (save, edit, delete, reset) bez zmian z poprzedniej wersji ...
+
 function saveExercise() {
     const name = document.getElementById('exName').value;
     const media = document.getElementById('exMedia').value;

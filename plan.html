@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Edycja Planu | Radek Komendera</title>
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/components.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
@@ -17,7 +18,6 @@
     </nav>
 
     <div class="container fade-in">
-        <!-- HEADER -->
         <div class="glass-panel">
             <div class="header-wrapper">
                 <div>
@@ -53,18 +53,18 @@
                     <div class="input-group">
                         <label>Ustawienia Planu</label>
                         <div style="display: flex; flex-direction: column; gap: 15px;">
-                            <!-- Improved Alignment -->
+                            <!-- Użycie klasy toggle-label-text do wyrównania -->
                             <div class="setting-row">
                                 <label class="toggle-switch">
                                     <input type="checkbox" id="planDeload" onchange="updatePlanData('hasDeload', this.checked)">
                                     <span class="slider"></span>
                                 </label>
-                                <span style="font-weight: 500; font-size: 0.9rem; margin-top: 1px;">Uwzględnij tydzień DELOAD</span>
+                                <span class="toggle-label-text">Uwzględnij tydzień DELOAD</span>
                             </div>
 
                             <div class="setting-row">
                                 <input type="color" id="planColor" style="width: 40px; height: 32px; padding: 2px; border: none; background: transparent; cursor: pointer;" oninput="updatePlanData('color', this.value)">
-                                <span style="font-weight: 500; font-size: 0.9rem; margin-top: 1px;">Kolor oznaczenia</span>
+                                <span class="toggle-label-text">Kolor oznaczenia</span>
                             </div>
                         </div>
                     </div>
@@ -83,7 +83,7 @@
         </button>
     </div>
 
-    <!-- Modals -->
+    <!-- Modals & Tooltips -->
     <div id="exercisePickerModal" class="modal-overlay">
         <div class="modal-content">
             <div style="padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); display:flex; justify-content:space-between; align-items:center;">
@@ -100,7 +100,6 @@
         </div>
     </div>
     
-    <!-- Tooltip (Updated Structure: Media Top, Content Bottom) -->
     <div id="appTooltip" class="exercise-tooltip">
         <div id="ttMediaContainer" class="tt-media-container"></div>
         <div class="tt-content">
