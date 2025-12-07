@@ -16,7 +16,7 @@
 
     <div class="container fade-in">
         <div class="glass-panel" style="text-align: center; border-top: 4px solid var(--primary-color);">
-            <h1 class="brand-font" style="font-size: 2rem; color: #fff;" id="stPlanName">...</h1>
+            <h1 class="brand-font" style="font-size: 2rem; color: #fff;" id="stPlanName">Ładowanie...</h1>
             <p id="stPlanNote" style="margin-top: 15px; color: var(--text-secondary); font-style: italic;"></p>
         </div>
 
@@ -35,26 +35,49 @@
         </div>
     </div>
 
-    <script src="js/storage.js"></script>
-    <script src="js/ui.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
+    <!-- UI Helper (Tooltip) -->
+    <script type="module" src="js/ui.js"></script>
+
+    <script type="module">
+        import { initApp, getDb } from './js/storage.js';
+        
+        // Funkcja zmieniająca kolory (musi być globalna dla onclick w HTML)
+        window.toggleColor = (el) => {
+            if (el.classList.contains('status-green')) {
+                el.classList.remove('status-green'); el.classList.add('status-yellow');
+            } else if (el.classList.contains('status-yellow')) {
+                el.classList.remove('status-yellow'); el.classList.add('status-red');
+            } else if (el.classList.contains('status-red')) {
+                el.classList.remove('status-red');
+            } else {
+                el.classList.add('status-green');
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', async () => {
             const params = new URLSearchParams(window.location.search);
             const id = params.get('id');
-            const plan = getPlan(id);
+            
+            // 1. Pobierz dane z GitHuba
+            await initApp();
+
+            // 2. Znajdź plan w pobranej bazie
+            const db = getDb();
+            const plan = db.plans.find(p => p.id === id);
 
             if (!plan) {
-                document.body.innerHTML = '<h2 style="color:white; text-align:center; margin-top:50px;">Nie znaleziono planu.</h2>';
+                document.getElementById('stPlanName').innerText = "Nie znaleziono planu";
+                document.getElementById('stPlanName').style.color = "var(--danger-color)";
                 return;
             }
 
+            // 3. Renderuj widok
             document.getElementById('stPlanName').innerText = plan.name;
             document.getElementById('stPlanNote').innerText = plan.mainNote || 'Powodzenia w treningu!';
 
             const container = document.getElementById('stDaysContainer');
             const weeks = parseInt(plan.duration) || 4;
             const hasDeload = plan.hasDeload;
-            const db = getDb();
 
             plan.days.forEach(day => {
                 const dayDiv = document.createElement('div');
@@ -64,6 +87,7 @@
                 day.exercises.forEach((ex, idx) => {
                     const dbEx = db.exercises.find(x => x.name === ex.name);
                     const nameClass = dbEx ? 'interactive-name' : '';
+                    // Używamy globalnej funkcji showTooltip z ui.js (przypisanej do window w ui.js)
                     const tooltipAttr = dbEx ? `onmouseenter="showTooltip(event, '${ex.name}')" onmouseleave="hideTooltip()"` : '';
 
                     let headerCols = '';
@@ -75,7 +99,6 @@
                     if(hasDeload) inputCols += `<td style="background:rgba(204,255,0,0.05)"><input class="result-input" placeholder="Lżej" onclick="toggleColor(this)"></td>`;
 
                     const exDiv = document.createElement('div');
-                    // COMPACT: Tylko 15px odstępu
                     exDiv.style.marginBottom = "15px";
                     exDiv.innerHTML = `
                         <div style="margin-bottom: 10px;">
@@ -107,7 +130,6 @@
                                     <span class="meta-value" style="color:var(--primary-color)">${ex.weight}</span>
                                 </div>` : ''}
                             </div>
-
                             ${ex.note ? `<div style="font-size:0.85rem; color:#bbb; margin-bottom:10px; font-style:italic;">Note: <span style="color:#fff">${ex.note}</span></div>` : ''}
                         </div>
 
@@ -124,18 +146,6 @@
                 container.appendChild(dayDiv);
             });
         });
-
-        function toggleColor(el) {
-            if (el.classList.contains('status-green')) {
-                el.classList.remove('status-green'); el.classList.add('status-yellow');
-            } else if (el.classList.contains('status-yellow')) {
-                el.classList.remove('status-yellow'); el.classList.add('status-red');
-            } else if (el.classList.contains('status-red')) {
-                el.classList.remove('status-red');
-            } else {
-                el.classList.add('status-green');
-            }
-        }
     </script>
 </body>
 </html>
