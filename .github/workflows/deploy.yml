@@ -4,20 +4,25 @@ on:
   push:
     branches: [ "main" ]
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout repo
         uses: actions/checkout@v4
-      
-      - name: Replace token
+
+      - name: Replace GH token placeholder
         run: |
           sed -i "s|__GH_TOKEN__|${{ secrets.GH_TOKEN }}|g" js/config.js
 
       - name: Upload artifact to Pages
-        uses: actions/upload-pages-artifact@v2
+        uses: actions/upload-pages-artifact@v3
         with:
           path: ./
 
@@ -27,4 +32,4 @@ jobs:
 
     steps:
       - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v2
+        uses: actions/deploy-pages@v4
