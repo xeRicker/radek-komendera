@@ -1,15 +1,18 @@
+// WAŻNE: Importy muszą być na samej górze
+import { getDb, saveExercisesToCloud } from './storage.js';
+
 let isEditing = false;
 let editingIndex = -1;
 
-function renderExerciseList() {
-    const db = getDb();
+export function renderExerciseList() {
+    const db = getDb(); // Teraz to zadziała, bo zaimportowaliśmy getDb
     const list = document.getElementById('exerciseList');
     if (!list) return;
 
     list.innerHTML = '';
     
-    if (db.exercises.length === 0) {
-        list.innerHTML = '<div class="text-sec" style="text-align:center; padding:20px;">Twoja baza jest pusta. Dodaj pierwsze ćwiczenie.</div>';
+    if (!db.exercises || db.exercises.length === 0) {
+        list.innerHTML = '<div class="text-sec" style="text-align:center; padding:20px;">Baza pusta. Dodaj pierwsze ćwiczenie.</div>';
         return;
     }
 
@@ -19,7 +22,7 @@ function renderExerciseList() {
         item.style.padding = '15px';
         item.style.marginBottom = '10px';
         
-        // Zastosowanie klasy .list-img która ma sztywne wymiary (70x70)
+        // Zabezpieczenie przed brakiem mediów
         const imgHTML = ex.media ? 
             `<img src="${ex.media}" class="list-img" onerror="this.src='https://via.placeholder.com/70?text=Error'">` : 
             `<div class="list-img" style="display:flex;align-items:center;justify-content:center;color:#555"><span class="material-symbols-rounded">image</span></div>`;
@@ -29,14 +32,15 @@ function renderExerciseList() {
                 ${imgHTML}
                 <div>
                     <h4 class="brand-font">${ex.name}</h4>
-                    <p style="font-size:0.8rem; color: #888;">${ex.desc ? (ex.desc.length > 50 ? ex.desc.substring(0, 50) + '...' : ex.desc) : ''}</p>
+                    <p style="font-size:0.8rem; color:#888;">${ex.desc ? (ex.desc.length > 50 ? ex.desc.substring(0, 50) + '...' : ex.desc) : ''}</p>
                 </div>
             </div>
             <div class="flex-row">
-                <button class="btn btn-secondary btn-icon-only" onclick="startEditExercise(${index})">
+                <!-- Używamy window.ExLogic, bo przypiszemy to w HTML -->
+                <button class="btn btn-secondary btn-icon-only" onclick="window.ExLogic.startEdit(${index})">
                     <span class="material-symbols-rounded">edit</span>
                 </button>
-                <button class="btn btn-danger btn-icon-only" onclick="deleteExercise(${index})">
+                <button class="btn btn-danger btn-icon-only" onclick="window.ExLogic.deleteEx(${index})">
                     <span class="material-symbols-rounded">delete</span>
                 </button>
             </div>
@@ -45,7 +49,7 @@ function renderExerciseList() {
     });
 }
 
-function saveExercise() {
+export async function saveExercise() {
     const name = document.getElementById('exName').value;
     const media = document.getElementById('exMedia').value;
     const desc = document.getElementById('exDesc').value;
@@ -64,12 +68,19 @@ function saveExercise() {
         db.exercises.push({ name, media, desc });
     }
 
-    saveDb(db);
-    resetForm();
+    // Reset formularza
+    document.getElementById('exName').value = '';
+    document.getElementById('exMedia').value = '';
+    document.getElementById('exDesc').value = '';
+
+    // Render lokalny (natychmiastowy)
     renderExerciseList();
+
+    // Zapis do chmury
+    await saveExercisesToCloud(db.exercises);
 }
 
-function startEditExercise(index) {
+export function startEdit(index) {
     const db = getDb();
     const ex = db.exercises[index];
     
@@ -85,16 +96,20 @@ function startEditExercise(index) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-function deleteExercise(index) {
-    if(confirm("Usunąć?")) {
+export async function deleteEx(index) {
+    if(confirm("Usunąć ćwiczenie?")) {
         const db = getDb();
         db.exercises.splice(index, 1);
-        saveDb(db);
+        
+        // Render lokalny
         renderExerciseList();
+        
+        // Zapis do chmury
+        await saveExercisesToCloud(db.exercises);
     }
 }
 
-function resetForm() {
+export function resetForm() {
     document.getElementById('exName').value = '';
     document.getElementById('exMedia').value = '';
     document.getElementById('exDesc').value = '';
@@ -102,5 +117,3 @@ function resetForm() {
     document.getElementById('formTitle').innerText = 'Dodaj Ćwiczenie';
     document.getElementById('saveExBtn').innerHTML = '<span class="material-symbols-rounded">add</span> Dodaj';
 }
-
-document.addEventListener('DOMContentLoaded', renderExerciseList);

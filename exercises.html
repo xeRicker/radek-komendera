@@ -2,7 +2,7 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>Baza Ćwiczeń</title>
+    <title>Radek Komendera - Ćwiczenia</title>
     <link rel="stylesheet" href="css/base.css">
     <link rel="stylesheet" href="css/components.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,39 +11,82 @@
     <nav class="navbar">
         <div class="logo brand-font">RADEK <span>KOMENDERA</span></div>
         <div class="nav-tabs">
-            <a href="index.html" class="nav-link"><span class="material-symbols-rounded">dashboard</span> Panel</a>
-            <a href="exercises.html" class="nav-link active"><span class="material-symbols-rounded">fitness_center</span> Baza</a>
+            <a href="index.html" class="nav-link">
+                <span class="material-symbols-rounded">dashboard</span> Panel
+            </a>
+            <a href="exercises.html" class="nav-link active">
+                <span class="material-symbols-rounded">fitness_center</span> Baza Ćwiczeń
+            </a>
         </div>
     </nav>
+
     <div class="container fade-in">
+        
         <div class="grid-2">
-            <div class="glass-panel" style="height:fit-content;">
-                <h2 class="brand-font" id="formTitle" style="margin-bottom:20px;">Dodaj Ćwiczenie</h2>
-                <div class="input-group"><label>Nazwa</label><input type="text" id="exName"></div>
-                <div class="input-group"><label>Media URL</label><input type="text" id="exMedia"></div>
-                <div class="input-group"><label>Opis</label><textarea id="exDesc" rows="4"></textarea></div>
+            <!-- Formularz -->
+            <div class="glass-panel" style="height: fit-content;">
+                <h2 class="brand-font" id="formTitle" style="margin-bottom: 20px;">Dodaj Ćwiczenie</h2>
+                
+                <div class="input-group">
+                    <label>Nazwa Ćwiczenia</label>
+                    <input type="text" id="exName" placeholder="np. Bench Press">
+                </div>
+                
+                <div class="input-group">
+                    <label>URL Obrazka / GIF</label>
+                    <input type="text" id="exMedia" placeholder="https://...">
+                    <small style="color: #666; font-size: 0.7rem; margin-top: 5px; display:block;">Link bezpośredni do jpg/png/gif</small>
+                </div>
+
+                <div class="input-group">
+                    <label>Opis Techniki</label>
+                    <textarea id="exDesc" rows="4" placeholder="Krótki opis techniki..."></textarea>
+                </div>
+
                 <div class="flex-row">
-                    <button class="btn" id="saveExBtn" onclick="window.ExLogic.saveExercise()" style="flex:2;"><span class="material-symbols-rounded">add</span> Dodaj</button>
-                    <button class="btn btn-secondary" onclick="window.ExLogic.resetForm()" style="flex:1;">Wyczyść</button>
+                    <button class="btn" id="saveExBtn" onclick="window.ExLogic.saveExercise()" style="flex: 2;">
+                        <span class="material-symbols-rounded">add</span> Dodaj
+                    </button>
+                    <button class="btn btn-secondary" onclick="window.ExLogic.resetForm()" style="flex: 1;">Wyczyść</button>
                 </div>
             </div>
+
+            <!-- Lista -->
             <div>
-                <h3 class="brand-font" style="margin-bottom:20px;">Biblioteka</h3>
-                <div id="exerciseList"></div>
+                <h3 class="brand-font" style="margin-bottom: 20px;">Biblioteka</h3>
+                <div id="exerciseList">
+                    <!-- JS generuje liste -->
+                </div>
             </div>
         </div>
+
     </div>
     
-    <script src="js/ui.js"></script>
+    <!-- Tooltip (potrzebny jak najedziesz na obrazek) -->
+    <div id="appTooltip" class="exercise-tooltip">
+        <div id="ttMediaContainer" class="tt-media-container"></div>
+        <div class="tt-content">
+            <div class="tt-title" id="ttTitle"></div>
+            <div class="tt-desc" id="ttDesc"></div>
+        </div>
+    </div>
+
+    <!-- UI Helpers (Tooltip) -->
+    <script type="module" src="js/ui.js"></script>
+
+    <!-- LOGIKA STRONY -->
     <script type="module">
         import { initApp } from './js/storage.js';
         import * as ExLogic from './js/exercises.js';
-        
-        // Bind to window for HTML onclick
+
+        // 1. Przypisujemy moduł do okna globalnego, żeby onclick="..." w HTML go widział
         window.ExLogic = ExLogic;
 
+        // 2. Start aplikacji
         document.addEventListener('DOMContentLoaded', async () => {
+            // Najpierw pobierz dane z GitHuba
             await initApp();
+            // Potem wyrenderuj listę (jak dane już są w pamięci)
             ExLogic.renderExerciseList();
         });
     </script>
