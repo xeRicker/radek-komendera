@@ -1,7 +1,8 @@
 {
   "id": "1765100045991",
-  "name": "Nowy Podopieczny",
-  "color": "#CCFF00",
+  "name": "SEBASTIAN MĄSIOR",
+  "color": "#ff000d",
   "days": [],
-  "duration": 4
+  "duration": 4,
+  "hasDeload": true
 }
