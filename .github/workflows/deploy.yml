@@ -1,49 +1,30 @@
-name: Deploy to GitHub Pages
+name: Build and Deploy
 
 on:
   push:
-    branches:
-      - main
-  workflow_dispatch:
-
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: "pages"
-  cancel-in-progress: true
+    branches: [ "main" ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Inject GitHub Token
+      
+      - name: Replace token
         run: |
-          sed -i 's|__GH_TOKEN__|${{ secrets.GH_TOKEN }}|g' js/config.js
-      
-      - name: Verify config.js content
-        run: cat js/config.js
+          sed -i "s|__GH_TOKEN__|${{ secrets.GH_TOKEN }}|g" js/config.js
 
-      - name: Setup Pages
-        uses: actions/configure-pages@v4
-      
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+      - name: Upload artifact to Pages
+        uses: actions/upload-pages-artifact@v2
         with:
-          path: '.'
+          path: ./
 
   deploy:
-    needs: build
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+    needs: build
+
     steps:
       - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v2
