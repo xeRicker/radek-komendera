@@ -5,7 +5,17 @@
   "days": [
     {
       "name": "LOWER B",
-      "exercises": []
+      "exercises": [
+        {
+          "name": "Split Squat",
+          "sets": "3",
+          "reps": "10",
+          "weight": "",
+          "tempo": "2010",
+          "rest": "90s",
+          "note": ""
+        }
+      ]
     }
   ],
   "duration": 4,
