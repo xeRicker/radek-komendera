@@ -11,82 +11,41 @@
     <nav class="navbar">
         <div class="logo brand-font">RADEK <span>KOMENDERA</span></div>
         <div class="nav-tabs">
-            <a href="index.html" class="nav-link">
-                <span class="material-symbols-rounded">dashboard</span> Panel
-            </a>
-            <a href="exercises.html" class="nav-link active">
-                <span class="material-symbols-rounded">fitness_center</span> Baza Ćwiczeń
-            </a>
+            <a href="index.html" class="nav-link" onclick="return window.ExLogic.checkExit()"><span class="material-symbols-rounded">dashboard</span> Panel</a>
+            <a href="exercises.html" class="nav-link active"><span class="material-symbols-rounded">fitness_center</span> Baza Ćwiczeń</a>
         </div>
     </nav>
-
     <div class="container fade-in">
-        
         <div class="grid-2">
-            <!-- Formularz -->
             <div class="glass-panel" style="height: fit-content;">
                 <h2 class="brand-font" id="formTitle" style="margin-bottom: 20px;">Dodaj Ćwiczenie</h2>
-                
-                <div class="input-group">
-                    <label>Nazwa Ćwiczenia</label>
-                    <input type="text" id="exName" placeholder="np. Bench Press">
-                </div>
-                
-                <div class="input-group">
-                    <label>URL Obrazka / GIF</label>
-                    <input type="text" id="exMedia" placeholder="https://...">
-                    <small style="color: #666; font-size: 0.7rem; margin-top: 5px; display:block;">Link bezpośredni do jpg/png/gif</small>
-                </div>
-
-                <div class="input-group">
-                    <label>Opis Techniki</label>
-                    <textarea id="exDesc" rows="4" placeholder="Krótki opis techniki..."></textarea>
-                </div>
-
+                <div class="input-group"><label>Nazwa Ćwiczenia</label><input type="text" id="exName" placeholder="np. Bench Press" oninput="window.ExLogic.inputChanged()"></div>
+                <div class="input-group"><label>URL Obrazka / GIF</label><input type="text" id="exMedia" placeholder="https://..." oninput="window.ExLogic.inputChanged()"><small style="color: #666; font-size: 0.7rem; margin-top: 5px; display:block;">Link bezpośredni do jpg/png/gif</small></div>
+                <div class="input-group"><label>Opis Techniki</label><textarea id="exDesc" rows="4" placeholder="Krótki opis techniki..." oninput="window.ExLogic.inputChanged()"></textarea></div>
                 <div class="flex-row">
-                    <button class="btn" id="saveExBtn" onclick="window.ExLogic.saveExercise()" style="flex: 2;">
-                        <span class="material-symbols-rounded">add</span> Dodaj
-                    </button>
+                    <button class="btn" id="saveExBtn" onclick="window.ExLogic.saveExercise()" style="flex: 2;"><span class="material-symbols-rounded">add</span> Dodaj</button>
                     <button class="btn btn-secondary" onclick="window.ExLogic.resetForm()" style="flex: 1;">Wyczyść</button>
                 </div>
             </div>
-
-            <!-- Lista -->
             <div>
                 <h3 class="brand-font" style="margin-bottom: 20px;">Biblioteka</h3>
-                <div id="exerciseList">
-                    <!-- JS generuje liste -->
-                </div>
+                <div id="exerciseList"></div>
             </div>
         </div>
-
     </div>
     
-    <!-- Tooltip (potrzebny jak najedziesz na obrazek) -->
     <div id="appTooltip" class="exercise-tooltip">
         <div id="ttMediaContainer" class="tt-media-container"></div>
-        <div class="tt-content">
-            <div class="tt-title" id="ttTitle"></div>
-            <div class="tt-desc" id="ttDesc"></div>
-        </div>
+        <div class="tt-content"><div class="tt-title" id="ttTitle"></div><div class="tt-desc" id="ttDesc"></div></div>
     </div>
 
-    <!-- UI Helpers (Tooltip) -->
     <script type="module" src="js/ui.js"></script>
-
-    <!-- LOGIKA STRONY -->
     <script type="module">
         import { initApp } from './js/storage.js';
         import * as ExLogic from './js/exercises.js';
-
-        // 1. Przypisujemy moduł do okna globalnego, żeby onclick="..." w HTML go widział
         window.ExLogic = ExLogic;
-
-        // 2. Start aplikacji
         document.addEventListener('DOMContentLoaded', async () => {
-            // Najpierw pobierz dane z GitHuba
             await initApp();
-            // Potem wyrenderuj listę (jak dane już są w pamięci)
             ExLogic.renderExerciseList();
         });
     </script>
