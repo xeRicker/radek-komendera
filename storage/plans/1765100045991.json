@@ -2,7 +2,12 @@
   "id": "1765100045991",
   "name": "SEBASTIAN MĄSIOR",
   "color": "#ff000d",
-  "days": [],
+  "days": [
+    {
+      "name": "Nowy Dzień",
+      "exercises": []
+    }
+  ],
   "duration": 4,
   "hasDeload": true
 }
