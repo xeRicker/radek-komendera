@@ -15,16 +15,20 @@ function saveCache(data) {
 
 export async function initApp() {
     toggleLoader(true, 'Pobieranie z chmury...');
-    const cloudData = await GitHub.loadAllData();
-    if (cloudData) {
-        saveCache(cloudData);
-        // showToast('Zsynchronizowano', 'success');
-    } else {
-        showToast('Błąd połączenia z GitHub (sprawdź token)', 'error');
+    try {
+        const cloudData = await GitHub.loadAllData();
+        if (cloudData) {
+            saveCache(cloudData);
+        } else {
+            showToast('Błąd połączenia z GitHub (sprawdź token)', 'error');
+        }
+    } catch (e) {
+        console.error("Init Error:", e);
+    } finally {
+        // TO GWARANTUJE, ŻE LOADER ZNIKNIE
+        toggleLoader(false);
     }
-    toggleLoader(false);
 }
-
 export async function saveExercisesToCloud(exercises) {
     const db = getDb();
     db.exercises = exercises;

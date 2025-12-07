@@ -8,20 +8,20 @@ let hasUnsavedChanges = false;
 // Główna funkcja ładowania
 export async function loadPlan(id) {
     const db = getDb();
-    // Deep copy, żeby nie modyfikować cache bez zapisu
     const original = db.plans.find(p => p.id === id);
     if (!original) {
         alert("Nie znaleziono planu!");
         window.location.href = 'index.html';
         return;
     }
+    // Deep copy
     currentPlan = JSON.parse(JSON.stringify(original));
 
     if (!currentPlan.duration) currentPlan.duration = 4;
     
     renderPlanMeta();
     renderDays();
-    markSaved(); // Reset stanu przycisku
+    markSaved(); 
     setupUnloadWarning();
 }
 
@@ -29,6 +29,14 @@ function setupUnloadWarning() {
     window.onbeforeunload = (e) => {
         if (hasUnsavedChanges) { e.preventDefault(); e.returnValue = ''; }
     };
+}
+
+// Funkcja sprawdzająca wyjście (podpięta pod przycisk Wróć)
+export function checkExit() {
+    if (hasUnsavedChanges) {
+        return confirm("Masz niezapisane zmiany. Czy na pewno chcesz wyjść bez zapisywania?");
+    }
+    return true;
 }
 
 // --- STATE ---
