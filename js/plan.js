@@ -1,167 +1,209 @@
+import { getDb, savePlanToCloud, deletePlanFromCloud } from './storage.js';
+import { openModal, closeModal } from './ui.js';
+
 let currentPlan = null;
 let targetDayIndex = null;
 
-document.addEventListener('DOMContentLoaded', () => {
-    const params = new URLSearchParams(window.location.search);
-    const id = params.get('id');
-    if (!id) return window.location.href = 'index.html';
+// Główna funkcja ładowania (wywoływana z HTML)
+export async function loadPlan(id) {
+    const db = getDb();
+    currentPlan = db.plans.find(p => p.id === id);
+    
+    if (!currentPlan) {
+        alert("Nie znaleziono planu!");
+        window.location.href = 'index.html';
+        return;
+    }
 
-    currentPlan = getPlan(id);
-    if (!currentPlan) return window.location.href = 'index.html';
-
+    // Ustawienia domyślne dla starych planów
     if (!currentPlan.duration) currentPlan.duration = 4;
-    if (currentPlan.hasDeload === undefined) currentPlan.hasDeload = false;
-
+    
     renderPlanMeta();
     renderDays();
-});
+}
 
 function renderPlanMeta() {
     document.getElementById('planHeaderTitle').innerText = currentPlan.name;
     document.getElementById('planName').value = currentPlan.name;
-    document.getElementById('planColor').value = currentPlan.color || '#CCFF00';
     document.getElementById('planDuration').value = currentPlan.duration;
-    document.getElementById('planDeload').checked = currentPlan.hasDeload;
+    document.getElementById('planColor').value = currentPlan.color || '#CCFF00';
+    document.getElementById('planDeload').checked = currentPlan.hasDeload || false;
     document.getElementById('planNote').value = currentPlan.mainNote || '';
 }
 
-function updatePlanData(field, value) {
-    currentPlan[field] = value;
-    if (field === 'name') document.getElementById('planHeaderTitle').innerText = value;
+// --- FUNKCJE EKSPORTOWANE DO HTML ---
+
+export function updatePlanData(field, val) { 
+    currentPlan[field] = val; 
+    if(field === 'name') document.getElementById('planHeaderTitle').innerText = val;
 }
 
-function saveCurrentState() { updatePlan(currentPlan); }
+export async function saveCurrentState() {
+    await savePlanToCloud(currentPlan);
+}
 
-function deleteCurrentPlan() {
+export async function deleteCurrentPlan() {
     if(confirm('Usunąć ten plan definitywnie?')) {
-        const db = getDb();
-        db.plans = db.plans.filter(p => p.id !== currentPlan.id);
-        saveDb(db);
+        await deletePlanFromCloud(currentPlan.id);
         window.location.href = 'index.html';
     }
 }
 
-function openStudentView() {
-    saveCurrentState();
-    window.open(`student.html?id=${currentPlan.id}`, '_blank');
+export function openStudentView() {
+    // Zapisujemy przed otwarciem, żeby uczeń widział zmiany
+    savePlanToCloud(currentPlan).then(() => {
+        window.open(`student.html?id=${currentPlan.id}`, '_blank');
+    });
 }
 
-// --- RENDERING DAYS & EXERCISES ---
+// --- RENDEROWANIE DNI I ĆWICZEŃ ---
 
-function renderDays() {
+export function renderDays() {
     const container = document.getElementById('daysContainer');
     container.innerHTML = '';
 
-    currentPlan.days.forEach((day, dIndex) => {
+    currentPlan.days.forEach((day, dIdx) => {
         const dayEl = document.createElement('div');
         dayEl.className = 'glass-panel';
         
         dayEl.innerHTML = `
-            <div class="flex-row space-between" style="margin-bottom: 25px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 15px;">
+            <div class="flex-row space-between" style="margin-bottom:25px; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:15px;">
                 <input type="text" value="${day.name}" 
-                       style="font-family:'Kanit'; font-style:italic; font-size:1.4rem; background:transparent; border:none; width:auto; color:var(--primary-color); padding:0;"
-                       onchange="updateDayName(${dIndex}, this.value)">
-                <button class="btn btn-danger btn-icon-only" onclick="deleteDay(${dIndex})">
+                       style="font-family:'Kanit';font-size:1.4rem;background:transparent;border:none;width:auto;color:var(--primary-color);padding:0;"
+                       onchange="window.PlanLogic.updateDayName(${dIdx}, this.value)">
+                <button class="btn btn-danger btn-icon-only" onclick="window.PlanLogic.deleteDay(${dIdx})">
                     <span class="material-symbols-rounded">delete</span>
                 </button>
             </div>
             
-            <div id="exercises-list-${dIndex}"></div>
+            <div id="list-${dIdx}"></div>
 
-            <button class="btn btn-secondary mt-2" onclick="openExercisePicker(${dIndex})" style="width: 100%; border-style: dashed;">
-                <span class="material-symbols-rounded">add_circle</span> Dodaj Ćwiczenie
+            <button class="btn btn-secondary mt-2" onclick="window.PlanLogic.openPicker(${dIdx})" style="width:100%;border-style:dashed;">
+                <span class="material-symbols-rounded">add</span> Dodaj Ćwiczenie
             </button>
         `;
         container.appendChild(dayEl);
-        renderExercises(dIndex, day.exercises);
+        renderExercises(dIdx, day.exercises);
     });
 }
 
-function renderExercises(dIndex, exercises) {
-    const list = document.getElementById(`exercises-list-${dIndex}`);
-    list.innerHTML = '';
-    const db = getDb();
+function renderExercises(dIdx, list) {
+    const el = document.getElementById(`list-${dIdx}`);
+    const db = getDb(); // Pobieramy bazę, żeby sprawdzić podglądy ćwiczeń
 
-    exercises.forEach((ex, eIndex) => {
+    list.forEach((ex, eIdx) => {
+        const dbEx = db.exercises.find(x => x.name === ex.name);
+        const nameClass = dbEx ? 'interactive-name' : '';
+        const tooltip = dbEx ? `onmouseenter="showTooltip(event, '${ex.name}')" onmouseleave="hideTooltip()"` : '';
+
         const row = document.createElement('div');
         row.className = 'exercise-row';
-
-        const dbEx = db.exercises.find(x => x.name === ex.name);
-        // Jeśli jest w bazie, dodajemy klasę interaktywną i eventy, jeśli nie - zwykły tekst
-        const nameClass = dbEx ? 'interactive-name' : '';
-        const tooltipEvents = dbEx ? `onmouseenter="showTooltip(event, '${ex.name}')" onmouseleave="hideTooltip()"` : '';
-
         row.innerHTML = `
             <div class="exercise-header">
-                <div style="font-size:1.1rem; font-weight:700; color:#fff; display:flex; align-items:center; gap:10px;">
-                    <span style="color:var(--primary-color); font-style:italic;">${eIndex + 1}.</span> 
-                    <span class="${nameClass}" ${tooltipEvents}>${ex.name}</span>
+                <div style="font-size:1.1rem;font-weight:700;color:#fff;display:flex;align-items:center;gap:10px;">
+                    <span style="color:var(--primary-color);font-style:italic;">${eIdx+1}.</span> 
+                    <span class="${nameClass}" ${tooltip}>${ex.name}</span>
                 </div>
-                <button class="btn btn-danger btn-icon-only" style="width:32px; height:32px; min-width:32px;" onclick="removeExercise(${dIndex}, ${eIndex})">
+                <button class="btn btn-danger btn-icon-only" style="width:32px;height:32px;min-width:32px;" onclick="window.PlanLogic.removeEx(${dIdx},${eIdx})">
                     <span class="material-symbols-rounded" style="font-size:18px">close</span>
                 </button>
             </div>
 
-            <div class="grid-3" style="margin-bottom: 20px;">
-                <div class="input-group" style="margin-bottom:0">
+            <div class="grid-3" style="margin-bottom:15px;">
+                <div class="input-group" style="margin:0">
                     <label>Serie</label>
-                    <input type="text" value="${ex.sets}" onchange="updateEx(${dIndex}, ${eIndex}, 'sets', this.value)">
+                    <input type="text" value="${ex.sets}" onchange="window.PlanLogic.updEx(${dIdx},${eIdx},'sets',this.value)">
                 </div>
-                <div class="input-group" style="margin-bottom:0">
-                    <label>Powtórzenia</label>
-                    <input type="text" value="${ex.reps}" onchange="updateEx(${dIndex}, ${eIndex}, 'reps', this.value)">
+                <div class="input-group" style="margin:0">
+                    <label>Powt</label>
+                    <input type="text" value="${ex.reps}" onchange="window.PlanLogic.updEx(${dIdx},${eIdx},'reps',this.value)">
                 </div>
-                <div class="input-group" style="margin-bottom:0">
+                <div class="input-group" style="margin:0">
                     <label>Tempo</label>
-                    <input type="text" value="${ex.tempo}" onchange="updateEx(${dIndex}, ${eIndex}, 'tempo', this.value)">
+                    <input type="text" value="${ex.tempo}" onchange="window.PlanLogic.updEx(${dIdx},${eIdx},'tempo',this.value)">
                 </div>
             </div>
-            
-            <div class="grid-2" style="margin-bottom: 20px;">
-                 <div class="input-group" style="margin-bottom:0">
+            <div class="grid-2" style="margin-bottom:15px;">
+                 <div class="input-group" style="margin:0">
                     <label>Przerwa</label>
-                    <input type="text" value="${ex.rest}" onchange="updateEx(${dIndex}, ${eIndex}, 'rest', this.value)">
+                    <input type="text" value="${ex.rest}" onchange="window.PlanLogic.updEx(${dIdx},${eIdx},'rest',this.value)">
                 </div>
-                <div class="input-group" style="margin-bottom:0">
+                <div class="input-group" style="margin:0">
                     <label>RIR / RPE</label>
-                    <input type="text" value="${ex.weight}" placeholder="np. 2 RIR" onchange="updateEx(${dIndex}, ${eIndex}, 'weight', this.value)">
+                    <input type="text" value="${ex.weight}" placeholder="np. 2 RIR" onchange="window.PlanLogic.updEx(${dIdx},${eIdx},'weight',this.value)">
                 </div>
             </div>
-
-            <div class="input-group" style="margin-bottom:0;">
-                <label>Notatki do ćwiczenia</label>
-                <input type="text" value="${ex.note || ''}" placeholder="..." onchange="updateEx(${dIndex}, ${eIndex}, 'note', this.value)">
+            <div class="input-group" style="margin:0;">
+                <label>Notatki</label>
+                <input type="text" value="${ex.note || ''}" placeholder="..." onchange="window.PlanLogic.updEx(${dIdx},${eIdx},'note',this.value)">
             </div>
         `;
-        list.appendChild(row);
+        el.appendChild(row);
     });
 }
 
-// --- ACTIONS ---
-function addDay() { currentPlan.days.push({ name: 'Nowy Dzień', exercises: [] }); saveCurrentState(); renderDays(); }
-function deleteDay(idx) { if(confirm('Usunąć dzień?')) { currentPlan.days.splice(idx, 1); saveCurrentState(); renderDays(); } }
-function updateDayName(idx, val) { currentPlan.days[idx].name = val; saveCurrentState(); }
-function removeExercise(dIdx, eIdx) { currentPlan.days[dIdx].exercises.splice(eIdx, 1); saveCurrentState(); renderDays(); }
-function updateEx(dIdx, eIdx, field, val) { currentPlan.days[dIdx].exercises[eIdx][field] = val; saveCurrentState(); }
+// --- LOGIKA EDYCJI ---
 
-// --- PICKER ---
-function openExercisePicker(dIndex) {
+export function addDay() { 
+    currentPlan.days.push({ name: 'Nowy Dzień', exercises: [] }); 
+    saveCurrentState(); 
+    renderDays(); 
+}
+
+export function deleteDay(idx) { 
+    if(confirm('Usunąć dzień?')) { 
+        currentPlan.days.splice(idx, 1); 
+        saveCurrentState(); 
+        renderDays(); 
+    } 
+}
+
+export function updateDayName(idx, val) { 
+    currentPlan.days[idx].name = val; 
+    saveCurrentState(); 
+}
+
+export function removeEx(dIdx, eIdx) { 
+    currentPlan.days[dIdx].exercises.splice(eIdx, 1); 
+    saveCurrentState(); 
+    renderDays(); 
+}
+
+export function updEx(dIdx, eIdx, field, val) { 
+    currentPlan.days[dIdx].exercises[eIdx][field] = val; 
+    saveCurrentState(); 
+}
+
+// --- EXERCISE PICKER ---
+
+export function openPicker(dIndex) {
     targetDayIndex = dIndex;
     const db = getDb();
     const list = document.getElementById('pickerList');
     list.innerHTML = '';
+    
+    // Sortuj alfabetycznie
     const sorted = db.exercises.sort((a,b) => a.name.localeCompare(b.name));
 
     sorted.forEach(ex => {
         const item = document.createElement('div');
         item.style.cssText = "display:flex; align-items:center; gap:15px; padding:12px; border-bottom:1px solid rgba(255,255,255,0.05); cursor:pointer; transition:0.2s;";
+        
+        const imgHtml = ex.media 
+            ? `<img src="${ex.media}" style="width:40px; height:40px; border-radius:6px; object-fit:cover; background:#222;">`
+            : '<div style="width:40px;height:40px;background:#222;border-radius:6px;"></div>';
+
         item.innerHTML = `
-            ${ex.media ? `<img src="${ex.media}" style="width:40px; height:40px; border-radius:6px; object-fit:cover; background:#222;">` : '<div style="width:40px;height:40px;background:#222;border-radius:6px;"></div>'}
+            ${imgHtml}
             <span style="font-weight:600;">${ex.name}</span>
         `;
+        
         item.onmouseover = () => item.style.background = "rgba(255,255,255,0.05)";
         item.onmouseout = () => item.style.background = "transparent";
-        item.onclick = () => selectEx(ex.name);
+        
+        item.onclick = () => {
+            selectEx(ex.name);
+        };
         list.appendChild(item);
     });
     
@@ -170,10 +212,11 @@ function openExercisePicker(dIndex) {
     setTimeout(() => document.getElementById('pickerSearch').focus(), 100);
 }
 
-function filterPicker(val) {
+export function filterPicker(val) {
     const list = document.getElementById('pickerList');
     Array.from(list.children).forEach(child => {
-        child.style.display = child.innerText.toLowerCase().includes(val.toLowerCase()) ? 'flex' : 'none';
+        const txt = child.innerText.toLowerCase();
+        child.style.display = txt.includes(val.toLowerCase()) ? 'flex' : 'none';
     });
 }
 
