@@ -2,7 +2,7 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>Edycja Planu | Radek Komendera</title>
+    <title>Plan</title>
     <link rel="stylesheet" href="css/base.css">
     <link rel="stylesheet" href="css/components.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,105 +11,74 @@
     <nav class="navbar">
         <div class="logo brand-font">RADEK <span>KOMENDERA</span></div>
         <div class="nav-tabs">
-            <a href="index.html" class="nav-link">
-                <span class="material-symbols-rounded">arrow_back</span> Wróć
-            </a>
+            <a href="index.html" class="nav-link"><span class="material-symbols-rounded">arrow_back</span> Wróć</a>
         </div>
     </nav>
-
     <div class="container fade-in">
         <div class="glass-panel">
             <div class="header-wrapper">
-                <div>
-                    <h1 class="brand-font" id="planHeaderTitle" style="color:var(--primary-color)">Ładowanie...</h1>
-                    <p class="text-sec">Kreator planu treningowego</p>
-                </div>
+                <div><h1 class="brand-font" id="planHeaderTitle" style="color:var(--primary-color)">Ładowanie...</h1></div>
                 <div class="flex-row">
-                    <button class="btn btn-secondary" onclick="openStudentView()">
-                        <span class="material-symbols-rounded">share</span> Widok Ucznia
-                    </button>
-                    <button class="btn btn-secondary" onclick="saveCurrentState(); alert('Zapisano zmiany!')">
-                        <span class="material-symbols-rounded">save</span> Zapisz
-                    </button>
-                    <button class="btn btn-danger btn-icon-only" onclick="deleteCurrentPlan()">
-                        <span class="material-symbols-rounded">delete</span>
-                    </button>
+                    <button class="btn btn-secondary" onclick="window.PlanLogic.openStudentView()"><span class="material-symbols-rounded">share</span> Widok Ucznia</button>
+                    <button class="btn btn-secondary" onclick="window.PlanLogic.saveCurrentState()"><span class="material-symbols-rounded">save</span> Zapisz</button>
+                    <button class="btn btn-danger btn-icon-only" onclick="window.PlanLogic.deleteCurrentPlan()"><span class="material-symbols-rounded">delete</span></button>
                 </div>
             </div>
-
             <div class="grid-2">
                 <div>
-                    <div class="input-group">
-                        <label>Nazwa Podopiecznego / Planu</label>
-                        <input type="text" id="planName" oninput="updatePlanData('name', this.value)">
-                    </div>
-                    <div class="input-group">
-                        <label>Długość Cyklu (Tygodnie)</label>
-                        <input type="number" id="planDuration" value="4" min="1" max="12" oninput="updatePlanData('duration', this.value)">
-                    </div>
+                    <div class="input-group"><label>Nazwa</label><input type="text" id="planName" oninput="window.PlanLogic.updatePlanData('name', this.value)"></div>
+                    <div class="input-group"><label>Długość (Tyg)</label><input type="number" id="planDuration" oninput="window.PlanLogic.updatePlanData('duration', this.value)"></div>
                 </div>
-
                 <div>
                     <div class="input-group">
-                        <label>Ustawienia Planu</label>
-                        <div style="display: flex; flex-direction: column; gap: 15px;">
-                            <!-- Użycie klasy toggle-label-text do wyrównania -->
+                        <label>Ustawienia</label>
+                        <div style="display:flex;flex-direction:column;gap:15px;">
                             <div class="setting-row">
-                                <label class="toggle-switch">
-                                    <input type="checkbox" id="planDeload" onchange="updatePlanData('hasDeload', this.checked)">
-                                    <span class="slider"></span>
-                                </label>
+                                <label class="toggle-switch"><input type="checkbox" id="planDeload" onchange="window.PlanLogic.updatePlanData('hasDeload', this.checked)"><span class="slider"></span></label>
                                 <span class="toggle-label-text">Uwzględnij tydzień DELOAD</span>
                             </div>
-
                             <div class="setting-row">
-                                <input type="color" id="planColor" style="width: 40px; height: 32px; padding: 2px; border: none; background: transparent; cursor: pointer;" oninput="updatePlanData('color', this.value)">
-                                <span class="toggle-label-text">Kolor oznaczenia</span>
+                                <input type="color" id="planColor" style="width:40px;height:30px;border:none;background:transparent;cursor:pointer;" oninput="window.PlanLogic.updatePlanData('color', this.value)">
+                                <span class="toggle-label-text">Kolor</span>
                             </div>
                         </div>
                     </div>
-                    <div class="input-group" style="margin-top: 25px;">
-                        <label>Notatka Główna (Widoczna dla ucznia)</label>
-                        <input type="text" id="planNote" placeholder="np. Skup się na tempie..." oninput="updatePlanData('mainNote', this.value)">
-                    </div>
+                    <div class="input-group" style="margin-top:25px;"><label>Notatka</label><input type="text" id="planNote" oninput="window.PlanLogic.updatePlanData('mainNote', this.value)"></div>
                 </div>
             </div>
         </div>
-
         <div id="daysContainer"></div>
-
-        <button class="btn" style="width:100%; height: 70px; font-size:1rem; margin-top:20px; background: rgba(255,255,255,0.05); color: #fff; border: 1px dashed rgba(255,255,255,0.2);" onclick="addDay()">
-            <span class="material-symbols-rounded">add</span> Dodaj Kolejny Dzień
-        </button>
+        <button class="btn" style="width:100%;height:70px;margin-top:20px;background:rgba(255,255,255,0.05);border:1px dashed rgba(255,255,255,0.2);color:#fff;" onclick="window.PlanLogic.addDay()"><span class="material-symbols-rounded">add</span> Dodaj Dzień</button>
     </div>
 
-    <!-- Modals & Tooltips -->
+    <!-- Modals -->
     <div id="exercisePickerModal" class="modal-overlay">
         <div class="modal-content">
-            <div style="padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); display:flex; justify-content:space-between; align-items:center;">
-                <h3 class="brand-font">Wybierz Ćwiczenie</h3>
-                <span class="material-symbols-rounded" style="cursor:pointer" onclick="closeModal('exercisePickerModal')">close</span>
+            <div style="padding:20px;border-bottom:1px solid rgba(255,255,255,0.1);display:flex;justify-content:space-between;">
+                <h3 class="brand-font">Wybierz Ćwiczenie</h3><span class="material-symbols-rounded" style="cursor:pointer" onclick="closeModal('exercisePickerModal')">close</span>
             </div>
-            <div style="padding: 15px;">
-                <input type="text" id="pickerSearch" placeholder="Szukaj w bazie..." oninput="filterPicker(this.value)" autofocus>
-            </div>
-            <div style="padding: 0 15px 15px 15px; overflow-y: auto; flex:1;" id="pickerList"></div>
-            <div style="padding: 15px; background: rgba(0,0,0,0.2); text-align: center; border-radius: 0 0 20px 20px;">
-                <button class="btn btn-secondary" onclick="window.location.href='exercises.html'" style="font-size:0.8rem; height:36px;">Zarządzaj Bazą</button>
-            </div>
+            <div style="padding:15px;"><input type="text" id="pickerSearch" placeholder="Szukaj..." oninput="window.PlanLogic.filterPicker(this.value)"></div>
+            <div id="pickerList" style="padding:0 15px 15px 15px;overflow-y:auto;flex:1;"></div>
         </div>
     </div>
-    
     <div id="appTooltip" class="exercise-tooltip">
         <div id="ttMediaContainer" class="tt-media-container"></div>
-        <div class="tt-content">
-            <div class="tt-title" id="ttTitle"></div>
-            <div class="tt-desc" id="ttDesc"></div>
-        </div>
+        <div class="tt-content"><div class="tt-title" id="ttTitle"></div><div class="tt-desc" id="ttDesc"></div></div>
     </div>
 
-    <script src="js/storage.js"></script>
     <script src="js/ui.js"></script>
-    <script src="js/plan.js"></script>
+    <script type="module">
+        import { initApp } from './js/storage.js';
+        import * as PlanLogic from './js/plan.js';
+        
+        window.PlanLogic = PlanLogic;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const params = new URLSearchParams(window.location.search);
+            const id = params.get('id');
+            await initApp();
+            if(id) PlanLogic.loadPlan(id);
+        });
+    </script>
 </body>
 </html>

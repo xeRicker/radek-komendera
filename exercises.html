@@ -2,51 +2,50 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>Radek Komendera - Ćwiczenia</title>
+    <title>Baza Ćwiczeń</title>
     <link rel="stylesheet" href="css/base.css">
     <link rel="stylesheet" href="css/components.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
-<!-- Reszta bez zmian logicznych, tylko head -->
 <body>
     <nav class="navbar">
         <div class="logo brand-font">RADEK <span>KOMENDERA</span></div>
         <div class="nav-tabs">
-            <a href="index.html" class="nav-link">
-                <span class="material-symbols-rounded">dashboard</span> Panel
-            </a>
-            <a href="exercises.html" class="nav-link active">
-                <span class="material-symbols-rounded">fitness_center</span> Baza Ćwiczeń
-            </a>
+            <a href="index.html" class="nav-link"><span class="material-symbols-rounded">dashboard</span> Panel</a>
+            <a href="exercises.html" class="nav-link active"><span class="material-symbols-rounded">fitness_center</span> Baza</a>
         </div>
     </nav>
     <div class="container fade-in">
         <div class="grid-2">
-            <div class="glass-panel" style="height: fit-content;">
-                <h2 class="brand-font" id="formTitle" style="margin-bottom: 20px;">Dodaj Ćwiczenie</h2>
-                <div class="input-group"> <label>Nazwa Ćwiczenia</label> <input type="text" id="exName" placeholder="np. Bench Press"> </div>
-                <div class="input-group"> <label>URL Obrazka / GIF</label> <input type="text" id="exMedia" placeholder="https://..."> <small style="color: #666; font-size: 0.7rem; margin-top: 5px; display:block;">Link bezpośredni do jpg/png/gif</small> </div>
-                <div class="input-group"> <label>Opis Techniki</label> <textarea id="exDesc" rows="4" placeholder="Krótki opis techniki..."></textarea> </div>
-                <div class="flex-row"> <button class="btn" id="saveExBtn" onclick="saveExercise()" style="flex: 2;"> <span class="material-symbols-rounded">add</span> Dodaj </button> <button class="btn btn-secondary" onclick="resetForm()" style="flex: 1;">Wyczyść</button> </div>
+            <div class="glass-panel" style="height:fit-content;">
+                <h2 class="brand-font" id="formTitle" style="margin-bottom:20px;">Dodaj Ćwiczenie</h2>
+                <div class="input-group"><label>Nazwa</label><input type="text" id="exName"></div>
+                <div class="input-group"><label>Media URL</label><input type="text" id="exMedia"></div>
+                <div class="input-group"><label>Opis</label><textarea id="exDesc" rows="4"></textarea></div>
+                <div class="flex-row">
+                    <button class="btn" id="saveExBtn" onclick="window.ExLogic.saveExercise()" style="flex:2;"><span class="material-symbols-rounded">add</span> Dodaj</button>
+                    <button class="btn btn-secondary" onclick="window.ExLogic.resetForm()" style="flex:1;">Wyczyść</button>
+                </div>
             </div>
             <div>
-                <h3 class="brand-font" style="margin-bottom: 20px;">Twoja Biblioteka</h3>
+                <h3 class="brand-font" style="margin-bottom:20px;">Biblioteka</h3>
                 <div id="exerciseList"></div>
             </div>
         </div>
     </div>
     
-    <!-- Tooltip -->
-    <div id="appTooltip" class="exercise-tooltip">
-        <div id="ttMediaContainer" class="tt-media-container"></div>
-        <div class="tt-content">
-            <div class="tt-title" id="ttTitle"></div>
-            <div class="tt-desc" id="ttDesc"></div>
-        </div>
-    </div>
-
-    <script src="js/storage.js"></script>
     <script src="js/ui.js"></script>
-    <script src="js/exercises.js"></script>
+    <script type="module">
+        import { initApp } from './js/storage.js';
+        import * as ExLogic from './js/exercises.js';
+        
+        // Bind to window for HTML onclick
+        window.ExLogic = ExLogic;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            await initApp();
+            ExLogic.renderExerciseList();
+        });
+    </script>
 </body>
 </html>
