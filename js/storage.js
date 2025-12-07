@@ -14,21 +14,24 @@ function saveCache(data) {
 }
 
 export async function initApp() {
-    toggleLoader(true, 'Pobieranie z chmury...');
+    toggleLoader(true, 'Pobieranie danych...'); // Pokaż loader
     try {
         const cloudData = await GitHub.loadAllData();
         if (cloudData) {
             saveCache(cloudData);
         } else {
-            showToast('Błąd połączenia z GitHub (sprawdź token)', 'error');
+            // Tylko loguj, nie blokuj UI na zawsze
+            console.warn('GitHub connection issue or empty data');
         }
     } catch (e) {
         console.error("Init Error:", e);
+        showToast("Błąd inicjalizacji", "error");
     } finally {
-        // TO GWARANTUJE, ŻE LOADER ZNIKNIE
+        // ZAWSZE ukryj loader na końcu
         toggleLoader(false);
     }
 }
+
 export async function saveExercisesToCloud(exercises) {
     const db = getDb();
     db.exercises = exercises;
