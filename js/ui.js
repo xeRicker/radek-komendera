@@ -1,5 +1,8 @@
-// --- Modal Logic ---
-function openModal(modalId) {
+import { getDb } from './storage.js'; // Potrzebne do pobierania danych do tooltipa
+
+// --- MODAL LOGIC ---
+
+export function openModal(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) {
         modal.classList.add('active');
@@ -7,7 +10,7 @@ function openModal(modalId) {
     }
 }
 
-function closeModal(modalId) {
+export function closeModal(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) {
         modal.classList.remove('active');
@@ -15,8 +18,9 @@ function closeModal(modalId) {
     }
 }
 
-// --- Tooltip Logic (Smart Fit) ---
-function showTooltip(event, name) {
+// --- TOOLTIP LOGIC ---
+
+export function showTooltip(event, name) {
     const db = getDb();
     const ex = db.exercises.find(e => e.name === name);
     if (!ex) return;
@@ -31,7 +35,6 @@ function showTooltip(event, name) {
     
     ttMedia.innerHTML = '';
     if (ex.media) {
-        // Use container to handle layout, image handles ratio
         ttMedia.style.display = 'flex';
         if (ex.media.includes('.mp4') || ex.media.includes('.webm')) {
             ttMedia.innerHTML = `<video src="${ex.media}" class="tt-media-video" autoplay loop muted playsinline></video>`;
@@ -49,25 +52,18 @@ function showTooltip(event, name) {
     let left = rect.left;
     let top = rect.bottom + 15;
 
-    // Check right edge
+    // Boundary Checks (prawa krawędź)
     if (left + tooltipWidth > window.innerWidth) {
         left = window.innerWidth - tooltipWidth - 20;
     }
-
-    // Check bottom edge - if flips, go above
-    // Note: Since height is dynamic (auto), we guess a safe max height or calculate after render
-    // For simplicity and smoothness, we prefer top alignment if bottom is tight
-    if (top + 400 > window.innerHeight) {
-        top = rect.top - 20; // Will be positioned above via CSS transform if we wanted, but simple JS shift is safer
-        // Actually, let's keep it simple: if close to bottom, show ABOVE cursor area
-        if (top > window.innerHeight * 0.7) {
-             // We need to know height. 
-             tt.style.visibility = 'hidden';
-             tt.style.display = 'block';
-             const h = tt.offsetHeight;
-             tt.style.visibility = '';
-             top = rect.top - h - 10; 
-        }
+    
+    // Boundary Checks (dół ekranu)
+    if (top + 300 > window.innerHeight) {
+        // Jeśli za nisko, pokaż nad kursorem (ale prosto, bez skomplikowanych obliczeń wysokości)
+        top = rect.top - 20; 
+        tt.style.transform = 'translateY(-100%)'; // Przesuń cały tooltip w górę
+    } else {
+        tt.style.transform = 'translateY(0)';
     }
 
     tt.style.left = `${left}px`;
@@ -75,19 +71,22 @@ function showTooltip(event, name) {
     tt.classList.add('visible');
 }
 
-function hideTooltip() {
+export function hideTooltip() {
     const tt = document.getElementById('appTooltip');
     if (tt) {
         tt.classList.remove('visible');
-        // Reset position to prevent jump on next show
-        setTimeout(() => { tt.style.top = '-9999px'; }, 200);
+        // Reset pozycji po ukryciu
+        setTimeout(() => { 
+            tt.style.top = '-9999px'; 
+            tt.style.transform = 'none';
+        }, 200);
     }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('.modal-overlay').forEach(overlay => {
-        overlay.addEventListener('click', (e) => {
-            if (e.target === overlay) closeModal(overlay.id);
-        });
-    });
-});
+// --- GLOBAL BINDINGS ---
+// To jest konieczne, aby HTML (np. onclick="closeModal(...)") widział te funkcje
+// mimo że jesteśmy w module.
+window.openModal = openModal;
+window.closeModal = closeModal;
+window.showTooltip = showTooltip;
+window.hideTooltip = hideTooltip;
