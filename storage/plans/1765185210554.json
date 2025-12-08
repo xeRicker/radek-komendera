@@ -4,16 +4,43 @@
   "color": "#CCFF00",
   "days": [
     {
-      "name": "Lower B",
+      "name": "Upper A",
       "exercises": [
         {
-          "name": "Split Squat",
+          "name": "Bench Press Hantlami",
           "sets": "3",
           "reps": "10",
           "weight": "",
           "tempo": "2-1-2",
           "rest": "90s",
-          "note": "Let's get jacked."
+          "note": ""
+        },
+        {
+          "name": "Wiosłowanie sztangą",
+          "sets": "3",
+          "reps": "10",
+          "weight": "",
+          "tempo": "2-1-2",
+          "rest": "90s",
+          "note": ""
+        },
+        {
+          "name": "Hammer Press",
+          "sets": "3",
+          "reps": "10",
+          "weight": "",
+          "tempo": "2-1-2",
+          "rest": "90s",
+          "note": ""
+        },
+        {
+          "name": "OHP na ławce",
+          "sets": "3",
+          "reps": "10",
+          "weight": "",
+          "tempo": "2-1-2",
+          "rest": "90s",
+          "note": ""
         }
       ],
       "collapsed": false
