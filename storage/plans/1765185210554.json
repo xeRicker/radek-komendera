@@ -1,8 +1,24 @@
 {
   "id": "1765185210554",
-  "name": "Nowy Podopieczny",
+  "name": "SEBASTIAN",
   "color": "#CCFF00",
-  "days": [],
+  "days": [
+    {
+      "name": "Lower B",
+      "exercises": [
+        {
+          "name": "Split Squat",
+          "sets": "3",
+          "reps": "10",
+          "weight": "",
+          "tempo": "2-1-2",
+          "rest": "90s",
+          "note": "Let's get jacked."
+        }
+      ],
+      "collapsed": false
+    }
+  ],
   "duration": 4,
   "mainNote": "Powodzenia na treningu!"
 }
