@@ -20,5 +20,6 @@
     }
   ],
   "duration": 4,
-  "mainNote": "Powodzenia na treningu!"
+  "mainNote": "Powodzenia na treningu!",
+  "hasDeload": true
 }
