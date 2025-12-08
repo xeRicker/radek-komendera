@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Panel</title>
-    <link rel="stylesheet" href="css/base.css">
-    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/base.css?v=12">
+    <link rel="stylesheet" href="css/components.css?v=12">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
@@ -17,76 +17,30 @@
     </nav>
     <div class="container fade-in">
         <div class="header-wrapper">
-            <div><h1 class="brand-font">Twoi Podopieczni</h1><p class="text-sec">Zarządzaj planami</p></div>
+            <!-- Usunięto tekst "Zarządzaj planami" -->
+            <div><h1 class="brand-font">Twoi Podopieczni</h1></div>
             <div class="flex-row">
-                <button class="btn btn-secondary btn-icon-only" onclick="toggleDeleteMode()"><span class="material-symbols-rounded">delete_sweep</span></button>
+                <button class="btn btn-secondary btn-icon-only" onclick="window.DashLogic.toggleDeleteMode()"><span class="material-symbols-rounded">delete_sweep</span></button>
                 <div class="flex-row" style="border-left:1px solid rgba(255,255,255,0.1);padding-left:15px;margin-left:5px;">
-                     <button class="btn btn-secondary" onclick="window.Storage.exportToJson()"><span class="material-symbols-rounded">download</span></button>
-                     <button class="btn" onclick="createNewPlan()"><span class="material-symbols-rounded">add</span> Nowy Plan</button>
+                     <button class="btn btn-secondary" onclick="window.DashLogic.downloadBackup()"><span class="material-symbols-rounded">download</span></button>
+                     <button class="btn" onclick="window.DashLogic.createPlan()"><span class="material-symbols-rounded">add</span> Nowy Plan</button>
                 </div>
             </div>
         </div>
-        <div id="deleteActionBar" style="display:none;margin-bottom:20px;background:rgba(255,68,68,0.1);border:1px solid var(--danger-color);padding:15px;border-radius:12px;justify-content:space-between;align-items:center;">
-            <span style="font-weight:600;color:var(--danger-color);">Tryb usuwania aktywny</span>
-            <button class="btn btn-danger" onclick="deleteSelectedPlans()">Usuń</button>
+        
+        <div id="deleteActionBar" style="display:none; margin-bottom:20px; background:rgba(255,50,50,0.1); border:1px solid var(--danger-color); padding:15px; border-radius:12px; justify-content:space-between; align-items:center;">
+            <span style="font-weight:600; color:var(--danger-color);">Tryb usuwania aktywny</span>
+            <button class="btn btn-danger" onclick="window.DashLogic.deleteSelected()">Usuń zaznaczone</button>
         </div>
+        
         <div id="plansGrid" class="grid-2"></div>
     </div>
 
+    <script type="module" src="js/ui/notifications.js"></script>
     <script type="module">
-        import { initApp, getDb, savePlanToCloud, deletePlanFromCloud, exportToJson } from './js/storage.js';
-        
-        window.Storage = { exportToJson }; // Bind for onclick
-
-        let isDeleteMode = false;
-        let selectedPlans = new Set();
-
-        window.renderDashboard = () => {
-            const db = getDb();
-            const grid = document.getElementById('plansGrid');
-            grid.innerHTML = '';
-            if(db.plans.length === 0) {
-                grid.innerHTML = `<div class="glass-panel empty-state" style="grid-column:1/-1;"><span class="material-symbols-rounded empty-state-icon">folder_off</span><h2>BRAK PLANÓW</h2><button class="btn" onclick="createNewPlan()" style="margin-top:20px;"><span class="material-symbols-rounded">add</span> Stwórz</button></div>`;
-                return;
-            }
-            db.plans.forEach(plan => {
-                const card = document.createElement('div');
-                card.className = `glass-panel plan-card ${isDeleteMode ? 'delete-mode' : ''}`;
-                if(selectedPlans.has(plan.id)) card.classList.add('selected');
-                card.style.borderLeft = `5px solid ${plan.color || '#CCFF00'}`;
-                card.onclick = () => {
-                    if (isDeleteMode) {
-                        selectedPlans.has(plan.id) ? selectedPlans.delete(plan.id) : selectedPlans.add(plan.id);
-                        window.renderDashboard();
-                    } else { window.location.href = `plan.html?id=${plan.id}`; }
-                };
-                card.innerHTML = `<div class="delete-checkbox"></div><div class="flex-row space-between"><h3 class="brand-font" style="font-size:1.4rem;">${plan.name}</h3><span class="material-symbols-rounded" style="color:${plan.color || '#CCFF00'}">fitness_center</span></div><p class="text-sec" style="font-size:0.9rem;margin-top:10px;">${plan.days.length} Dni &bull; ${plan.duration || 4} Tygodnie</p>`;
-                grid.appendChild(card);
-            });
-        };
-
-        window.createNewPlan = async () => {
-            const newPlan = { id: Date.now().toString(), name: 'Nowy Podopieczny', color: '#CCFF00', days: [], duration: 4 };
-            await savePlanToCloud(newPlan);
-            window.renderDashboard();
-        };
-
-        window.toggleDeleteMode = () => {
-            isDeleteMode = !isDeleteMode; selectedPlans.clear();
-            document.getElementById('deleteActionBar').style.display = isDeleteMode ? 'flex' : 'none';
-            window.renderDashboard();
-        };
-
-        window.deleteSelectedPlans = async () => {
-            if(confirm(`Usunąć ${selectedPlans.size} planów?`)) {
-                for (let id of selectedPlans) await deletePlanFromCloud(id);
-                window.toggleDeleteMode();
-            }
-        };
-
-        document.addEventListener('DOMContentLoaded', async () => {
-            await initApp();
-            window.renderDashboard();
+        import * as Dash from './js/modules/dashboard.js?v=12';
+        document.addEventListener('DOMContentLoaded', () => {
+            if(window.DashLogic) window.DashLogic.init();
         });
     </script>
 </body>

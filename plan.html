@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <title>Edycja Planu | Radek Komendera</title>
-    <link rel="stylesheet" href="css/base.css">
-    <link rel="stylesheet" href="css/components.css">
+    <!-- Bump wersji -->
+    <link rel="stylesheet" href="css/base.css?v=16">
+    <link rel="stylesheet" href="css/components.css?v=16">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
@@ -21,11 +22,14 @@
             <div class="header-wrapper">
                 <div>
                     <h1 class="brand-font" id="planHeaderTitle" style="color:var(--primary-color)">Ładowanie...</h1>
-                    <p class="text-sec">Kreator planu treningowego</p>
                 </div>
                 <div class="flex-row">
-                    <button class="btn btn-secondary" onclick="window.PlanLogic.openStudentView()"><span class="material-symbols-rounded">share</span> Widok Ucznia</button>
-                    <!-- PRZYCISK ZAPISU -->
+                    <!-- NOWY PRZYCISK: KOPIUJ LINK -->
+                    <button class="btn btn-secondary" onclick="window.PlanLogic.copyLink()" title="Skopiuj link dla ucznia">
+                        <span class="material-symbols-rounded">link</span> Link
+                    </button>
+                    
+                    <button class="btn btn-secondary" onclick="window.PlanLogic.openStudentView()"><span class="material-symbols-rounded">share</span> Podgląd</button>
                     <button class="btn btn-save" id="savePlanBtn" onclick="window.PlanLogic.saveCurrentState()"><span class="material-symbols-rounded">check</span> Zapisane</button>
                     <button class="btn btn-danger btn-icon-only" onclick="window.PlanLogic.deleteCurrentPlan()"><span class="material-symbols-rounded">delete</span></button>
                 </div>
@@ -34,30 +38,38 @@
                 <div>
                     <div class="input-group"><label>Nazwa Podopiecznego / Planu</label><input type="text" id="planName" oninput="window.PlanLogic.updatePlanData('name', this.value)"></div>
                     <div class="input-group"><label>Długość Cyklu (Tygodnie)</label><input type="number" id="planDuration" value="4" min="1" max="12" oninput="window.PlanLogic.updatePlanData('duration', this.value)"></div>
+                    
+                    <div class="input-group">
+                        <label>Notatka Główna</label>
+                        <input type="text" id="planNote" placeholder="np. Skup się na tempie..." oninput="window.PlanLogic.updatePlanData('mainNote', this.value)">
+                    </div>
                 </div>
                 <div>
                     <div class="input-group">
                         <label>Ustawienia Planu</label>
-                        <div style="display: flex; flex-direction: column; gap: 15px;">
-                            <div class="setting-row">
-                                <label class="toggle-switch"><input type="checkbox" id="planDeload" onchange="window.PlanLogic.updatePlanData('hasDeload', this.checked)"><span class="slider"></span></label>
+                        <div style="display: flex; flex-direction: column; gap: 10px;">
+                            <label class="setting-row">
                                 <span class="toggle-label-text">Uwzględnij tydzień DELOAD</span>
-                            </div>
-                            <div class="setting-row">
+                                <span class="toggle-switch"><input type="checkbox" id="planDeload" onchange="window.PlanLogic.updatePlanData('hasDeload', this.checked)"><span class="slider"></span></span>
+                            </label>
+                            <label class="setting-row">
+                                <span class="toggle-label-text">Kolor oznaczenia</span>
                                 <div style="position:relative; width:32px; height:32px; border-radius:50%; overflow:hidden; border:2px solid rgba(255,255,255,0.2);">
                                     <input type="color" id="planColor" style="position:absolute; top:-50%; left:-50%; width:200%; height:200%; cursor:pointer; padding:0; margin:0;" oninput="window.PlanLogic.updatePlanData('color', this.value)">
                                 </div>
-                                <span class="toggle-label-text">Kolor oznaczenia</span>
-                            </div>
+                            </label>
                         </div>
                     </div>
-                    <div class="input-group" style="margin-top: 25px;"><label>Notatka Główna (Widoczna dla ucznia)</label><input type="text" id="planNote" placeholder="np. Skup się na tempie..." oninput="window.PlanLogic.updatePlanData('mainNote', this.value)"></div>
                 </div>
             </div>
         </div>
+        
         <div id="daysContainer"></div>
+        
         <button class="btn" style="width:100%; height: 70px; font-size:1rem; margin-top:20px; background: rgba(255,255,255,0.05); color: #fff; border: 1px dashed rgba(255,255,255,0.2);" onclick="window.PlanLogic.addDay()"><span class="material-symbols-rounded">add</span> Dodaj Kolejny Dzień</button>
     </div>
+
+    <!-- MODAL -->
     <div id="exercisePickerModal" class="modal-overlay">
         <div class="modal-content">
             <div style="padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); display:flex; justify-content:space-between; align-items:center;">
@@ -67,20 +79,23 @@
             <div style="padding: 0 15px 15px 15px; overflow-y: auto; flex:1;" id="pickerList"></div>
         </div>
     </div>
+
+    <!-- TOOLTIP -->
     <div id="appTooltip" class="exercise-tooltip">
         <div id="ttMediaContainer" class="tt-media-container"></div>
         <div class="tt-content"><div class="tt-title" id="ttTitle"></div><div class="tt-desc" id="ttDesc"></div></div>
     </div>
-    <script type="module" src="js/ui.js"></script>
+
+    <script type="module" src="js/ui/modal.js"></script>
+    <script type="module" src="js/ui/tooltip.js"></script>
     <script type="module">
-        import { initApp } from './js/storage.js';
-        import * as PlanLogic from './js/plan.js';
-        window.PlanLogic = PlanLogic;
+        import { initApp } from './js/core/storage.js?v=16';
+        import './js/modules/plan/controller.js?v=16';
         document.addEventListener('DOMContentLoaded', async () => {
             const params = new URLSearchParams(window.location.search);
             const id = params.get('id');
             await initApp();
-            if(id) PlanLogic.loadPlan(id);
+            if(id && window.PlanLogic) window.PlanLogic.loadPlan(id);
         });
     </script>
 </body>

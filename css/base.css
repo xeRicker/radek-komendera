@@ -1,20 +1,20 @@
-@import url('https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,300;0,400;0,600;0,800;1,600;1,800&family=Inter:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,300;0,400;0,600;0,700;0,800;1,600;1,800&family=Inter:wght@300;400;500;600&display=swap');
 @import url('https://fonts.googleapis.com/icon?family=Material+Symbols+Rounded');
 
 :root {
     --bg-color: #050505;
     --surface-glass: rgba(20, 20, 20, 0.85);
     --primary-color: #CCFF00;
-    --primary-glow: rgba(204, 255, 0, 0.4);
-    --danger-color: #ff4444;
+    --primary-glow: rgba(204, 255, 0, 0.5);
+    --danger-color: #ff3333;
     --text-primary: #FFFFFF;
-    --text-secondary: #888888;
-    --border-glass: 1px solid rgba(255, 255, 255, 0.08);
-    --radius-lg: 24px;
-    --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    --text-secondary: #999999;
+    --border-light: 1px solid rgba(255, 255, 255, 0.1);
+    --radius-lg: 20px;
+    --shadow-soft: 0 10px 40px rgba(0,0,0,0.6);
 }
 
-* { box-sizing: border-box; margin: 0; padding: 0; outline: none; -webkit-tap-highlight-color: transparent; }
+* { box-sizing: border-box; margin: 0; padding: 0; outline: none; }
 
 body {
     background-color: var(--bg-color);
@@ -22,30 +22,85 @@ body {
     font-family: 'Inter', sans-serif;
     min-height: 100vh;
     overflow-x: hidden;
-    background-image: radial-gradient(circle at 50% 0%, rgba(204, 255, 0, 0.04) 0%, transparent 60%);
+    background-image: 
+        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    background-attachment: fixed;
 }
 
-.fade-in { animation: fadeIn 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
-
-h1, h2, h3, .brand-font { font-family: 'Kanit', sans-serif; font-weight: 800; font-style: italic; text-transform: uppercase; letter-spacing: 0.5px; }
-
-/* --- NAVIGATION --- */
-.navbar {
-    display: flex; justify-content: space-between; align-items: center; padding: 0 40px; height: 80px;
-    background: rgba(5, 5, 5, 0.85); backdrop-filter: blur(15px); border-bottom: var(--border-glass);
-    position: sticky; top: 0; z-index: 100;
+/* TYPOGRAFIA MARKI (SPÓJNOŚĆ) */
+h1, h2, h3, .brand-font { 
+    font-family: 'Kanit', sans-serif; 
+    font-weight: 800; 
+    font-style: italic; 
+    text-transform: uppercase; 
 }
-.logo { font-size: 1.5rem; color: #fff; display: flex; align-items: center; gap: 8px; }
-.logo span { color: var(--primary-color); text-shadow: 0 0 15px rgba(204, 255, 0, 0.3); }
-.nav-tabs { display: flex; background: rgba(255, 255, 255, 0.05); padding: 4px; border-radius: 50px; border: var(--border-glass); height: 50px; }
-.nav-link { text-decoration: none; color: var(--text-secondary); padding: 0 30px; height: 100%; display: flex; align-items: center; justify-content: center; border-radius: 40px; font-weight: 500; font-size: 0.95rem; transition: var(--transition); gap: 8px; white-space: nowrap; }
-.nav-link:hover { color: #fff; background: rgba(255,255,255,0.05); }
-.nav-link.active { background: var(--primary-color); color: #000; font-weight: 600; box-shadow: 0 0 20px rgba(204, 255, 0, 0.25); }
 
-/* --- LAYOUT UTILS --- */
-.container { max-width: 1200px; margin: 40px auto; padding: 0 20px 100px 20px; }
-.flex-row { display: flex; align-items: center; gap: 10px; }
-.space-between { justify-content: space-between; }
-.grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 30px; }
-.text-sec { color: var(--text-secondary); }
+/* LOGO */
+.logo { font-size: 1.8rem; color: #fff; display: flex; align-items: center; gap: 8px; }
+.logo span { color: var(--primary-color); text-shadow: 0 0 15px var(--primary-glow); }
+
+/* INTERAKTYWNY TEKST (NAZWY ĆWICZEŃ) */
+.interactive-text {
+    font-family: 'Kanit', sans-serif; 
+    font-weight: 800; /* Grubiej */
+    font-style: italic;
+    color: #eee;
+    border-bottom: 2px dotted rgba(255,255,255,0.3); cursor: help;
+    transition: 0.2s; display: inline-block;
+}
+.interactive-text:hover { color: var(--primary-color); border-color: var(--primary-color); }
+
+/* ANIMACJE */
+.fade-in { animation: fadeIn 0.5s ease forwards; opacity: 0; transform: translateY(15px); }
+@keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
+.spin { animation: spin 1s linear infinite; }
+@keyframes spin { 100% { transform: rotate(360deg); } }
+
+/* --- TOOLTIP (NAPRAWA ZDJĘCIA) --- */
+#appTooltip {
+    position: fixed; top: 0; left: 0;
+    width: 340px; /* Stała szerokość ramki */
+    background: #080808;
+    border: 1px solid var(--primary-color);
+    border-radius: 12px;
+    z-index: 9999999;
+    pointer-events: none; opacity: 0; transform: scale(0.95);
+    transition: opacity 0.15s, transform 0.15s;
+    box-shadow: 0 30px 80px rgba(0,0,0,1);
+    overflow: hidden;
+    display: flex; flex-direction: column;
+}
+#appTooltip.visible { opacity: 1; transform: scale(1); }
+
+/* Kontener ma wysokość auto - dopasowuje się do zdjęcia */
+.tt-media-container { 
+    width: 100%; 
+    height: auto; 
+    background: #000; 
+    line-height: 0; /* Usuwa puste miejsce pod img */
+}
+
+/* Zdjęcie wypełnia szerokość, wysokość auto (zachowuje proporcje) */
+.tt-media, .tt-media-video { 
+    width: 100%; 
+    height: auto; 
+    display: block; 
+}
+
+.tt-content { padding: 15px; background: #111; border-top: 1px solid rgba(255,255,255,0.1); }
+/* Tytuł w tooltipie taką samą czcionką jak wszędzie */
+.tt-title { 
+    color: var(--primary-color); 
+    font-family: 'Kanit', sans-serif; font-weight: 800; font-style: italic; text-transform: uppercase;
+    font-size: 1.1rem; margin-bottom: 5px; 
+}
+.tt-desc { font-size: 0.85rem; color: #bbb; line-height: 1.5; }
+
+/* --- TOASTS FIX --- */
+.app-toast {
+    position: fixed !important; 
+    bottom: 30px !important; left: 30px !important;
+    z-index: 2147483647 !important; /* MAX INT */
+}
